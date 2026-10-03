@@ -238,6 +238,84 @@ a.preview-embed-title:hover { text-decoration: underline; }
 .spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.35); border-top-color: white; border-radius: 50%; animation: spinner-turn .7s linear infinite; }
 @keyframes spinner-turn { to { transform: rotate(360deg); } }
 
+.automod-page { width: min(1280px, calc(100% - 48px)); margin: 38px auto 64px; color: var(--text); }
+.automod-warning { width: min(440px, calc(100% - 32px)); margin: auto; border: 1px solid var(--line-strong); border-radius: 6px; padding: 24px; color: var(--text); background: var(--surface); }
+.automod-warning::backdrop { background: rgba(0, 0, 0, .72); }
+.automod-warning p { margin: 0 0 20px; color: #d0d2d8; font-size: 13px; line-height: 1.6; }
+.automod-warning button { min-width: 64px; min-height: 34px; border: 1px solid var(--accent-line); border-radius: 4px; padding: 0 12px; color: var(--accent); background: var(--accent-wash); font-size: 11px; font-weight: 600; cursor: pointer; }
+.automod-heading { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 22px; }
+.automod-heading > svg { margin-top: 4px; color: var(--accent); }
+.automod-heading p { margin: 0 0 5px; color: var(--subtle); font-size: 10px; font-weight: 650; }
+.automod-heading h1 { margin: 0; font-size: 25px; line-height: 1.2; font-weight: 650; }
+.automod-heading span { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; }
+.automod-filters { display: flex; align-items: center; gap: 14px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+.automod-search { min-width: 220px; max-width: 320px; height: 38px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 4px; padding: 0 9px; color: var(--subtle); background: var(--surface); }
+.automod-search:focus-within { border-color: var(--accent-line); }
+.automod-search input { width: 100%; min-width: 0; border: 0; outline: 0; color: var(--text); background: transparent; font-size: 11px; }
+.automod-search input::placeholder { color: var(--subtle); }
+.automod-categories { min-width: 0; display: flex; gap: 3px; overflow-x: auto; scrollbar-width: none; }
+.automod-categories::-webkit-scrollbar { display: none; }
+.automod-category { min-height: 31px; flex: 0 0 auto; border: 1px solid transparent; border-radius: 3px; padding: 0 8px; color: var(--muted); background: transparent; font-size: 10px; cursor: pointer; }
+.automod-category:hover { color: var(--text); }
+.automod-category.is-active { border-color: var(--accent-line); color: var(--text); background: var(--accent-wash); }
+.automod-workspace { display: grid; grid-template-columns: minmax(265px, .72fr) minmax(0, 1.6fr); gap: 30px; padding-top: 18px; }
+.automod-rules { min-width: 0; }
+.automod-rule-count { margin: 0; padding: 0 0 8px; color: var(--subtle); font-size: 9px; }
+.automod-rule { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; border: 0; border-top: 1px solid var(--line); padding: 12px 8px; color: inherit; text-align: left; background: transparent; cursor: pointer; }
+.automod-rule:last-of-type { border-bottom: 1px solid var(--line); }
+.automod-rule:hover { background: rgba(255,255,255,.025); }
+.automod-rule.is-active { border-left: 2px solid var(--accent); background: var(--accent-wash); }
+.automod-rule-meta { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--subtle); font-size: 9px; }
+.automod-severity { font-size: 9px; font-weight: 600; }
+.severity-critical { color: #e99ba3; }.severity-high { color: #e3bd7d; }.severity-medium { color: var(--accent); }
+.automod-rule > strong { color: var(--text); font-size: 11px; font-weight: 600; }
+.automod-rule-description { display: -webkit-box; overflow: hidden; color: var(--muted); font-size: 10px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.automod-no-results { border-top: 1px solid var(--line); padding: 15px 8px; color: var(--muted); font-size: 11px; }
+.automod-detail-column { min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+.automod-detail { min-width: 0; }
+.automod-detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+.automod-detail-heading p { margin: 0 0 6px; color: var(--muted); font-size: 10px; }
+.automod-detail-heading p > span { margin: 0 4px; color: var(--subtle); }
+.automod-detail-heading h2 { margin: 0; color: var(--text); font-size: 17px; line-height: 1.35; font-weight: 650; }
+.automod-copy { min-height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 0 0 auto; border: 1px solid var(--accent-line); border-radius: 4px; padding: 0 9px; color: var(--accent); background: var(--accent-wash); font-size: 10px; font-weight: 600; cursor: pointer; }
+.automod-copy:hover { background: rgba(172,246,200,.15); }
+.automod-description { margin: 14px 0; color: #d0d2d8; font-size: 11px; line-height: 1.6; }
+.automod-pattern { overflow-x: auto; border: 1px solid var(--line); border-left: 2px solid var(--accent); border-radius: 3px; padding: 11px 12px; color: var(--accent); background: var(--surface); font: 11px/1.6 Consolas, "SFMono-Regular", monospace; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
+.automod-details { border-bottom: 1px solid var(--line); }
+.automod-details summary { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #dadddf; font-size: 10px; font-weight: 600; cursor: pointer; list-style: none; }
+.automod-details summary::-webkit-details-marker { display: none; }
+.automod-details summary svg { color: var(--subtle); transition: transform .15s; }
+.automod-details[open] summary svg { transform: rotate(90deg); }
+.automod-details ul { margin: 0; padding: 0 0 12px 16px; color: var(--muted); font-size: 10px; line-height: 1.6; }
+.automod-details li + li { margin-top: 4px; }
+.automod-tester { border-top: 1px solid var(--line); padding-top: 14px; }
+.automod-tester header { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
+.automod-tester header svg { color: var(--accent); }
+.automod-tester h2 { margin: 0; font-size: 12px; font-weight: 650; }
+.automod-tester textarea { width: 100%; min-height: 80px; resize: vertical; border: 1px solid var(--line-strong); border-radius: 4px; outline: 0; padding: 10px; color: var(--text); background: var(--surface); font: 11px/1.5 Consolas, "SFMono-Regular", monospace; }
+.automod-tester textarea:focus { border-color: var(--accent); }
+.automod-tester textarea::placeholder { color: var(--subtle); }
+.automod-test-result { display: flex; align-items: flex-start; gap: 7px; margin-top: 9px; border-left: 2px solid; padding: 8px 9px; font-size: 10px; line-height: 1.5; }
+.automod-test-result.is-match { border-color: var(--accent); color: var(--accent); background: var(--accent-wash); }
+.automod-test-result.is-clear { border-color: var(--line-strong); color: var(--muted); background: var(--surface); }
+.automod-test-result.is-error { border-color: #e99ba3; color: #e99ba3; background: rgba(233,155,163,.08); }
+.automod-match-list { margin-left: auto; color: #d5d7dc; font-family: Consolas, "SFMono-Regular", monospace; overflow-wrap: anywhere; }
+.automod-empty-detail { align-self: start; color: var(--muted); font-size: 12px; }
+@media (max-width: 850px) {
+  .automod-filters { align-items: flex-start; flex-direction: column; gap: 9px; }
+  .automod-search { max-width: none; width: 100%; }
+  .automod-workspace { grid-template-columns: minmax(0, 1fr); gap: 19px; }
+  .automod-rules { max-height: 300px; overflow-y: auto; }
+}
+@media (max-width: 600px) {
+  .automod-page { width: calc(100% - 28px); margin-top: 26px; }
+  .automod-heading { margin-bottom: 17px; }
+  .automod-heading h1 { font-size: 22px; }
+  .automod-categories { margin-right: -14px; padding-bottom: 3px; }
+  .automod-detail-heading { align-items: center; }
+  .automod-match-list { margin-left: 0; }
+}
+
 @media (max-width: 600px) {
   .topbar { height: 52px; padding: 0 17px; }
   .page-wrap { width: calc(100% - 34px); margin-top: 36px; }
