@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ArrowUpRight, Webhook, Library } from "lucide-react";
+﻿import Link from "next/link";
+import { ArrowUpRight, Webhook, Library, BadgePlus, LayoutPanelTop } from "lucide-react";
 export default function Home() {
   return (
     <main className="page-wrap directory-page">
@@ -23,6 +23,24 @@ export default function Home() {
         <span className="tool-copy">
           <span className="tool-title">Automod Library</span>
           <span className="tool-description">View and copy automod rules and regexes.</span>
+        </span>
+        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
+      </Link>
+
+      <Link className="tool-link" href="/role-icon-maker">
+        <span className="tool-icon badge-plus" aria-hidden="true"><BadgePlus size={19} /></span>
+        <span className="tool-copy">
+          <span className="tool-title">Role Icon Maker</span>
+          <span className="tool-description">Create custom role icons for your Discord server.</span>
+        </span>
+        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
+      </Link>
+
+      <Link className="tool-link" href="/web-embed-builder">
+        <span className="tool-icon layout-panel-top" aria-hidden="true"><LayoutPanelTop size={19} /></span>
+        <span className="tool-copy">
+          <span className="tool-title">Web Embed Builder</span>
+          <span className="tool-description">Simple tool to help you configure discord embeds for your site!</span>
         </span>
         <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
       </Link>
