@@ -1,5 +1,6 @@
 ﻿import Link from "next/link";
-import { ArrowUpRight, Webhook, Library, BadgePlus, LayoutPanelTop } from "lucide-react";
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Server } from "lucide-react";
+import { ServerSearch } from "./components/icons/ServerSearch";
 export default function Home() {
   return (
     <main className="page-wrap directory-page">
@@ -37,10 +38,28 @@ export default function Home() {
       </Link>
 
       <Link className="tool-link" href="/web-embed-builder">
-        <span className="tool-icon layout-panel-top" aria-hidden="true"><LayoutPanelTop size={19} /></span>
+        <span className="tool-icon globe-code" aria-hidden="true"><GlobeCode size={19} /></span>
         <span className="tool-copy">
           <span className="tool-title">Web Embed Builder</span>
-          <span className="tool-description">Simple tool to help you configure discord embeds for your site!</span>
+          <span className="tool-description">Simple tool to help you configure discord embeds for your site.</span>
+        </span>
+        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
+      </Link>
+
+      <Link className="tool-link" href="/user-lookup">
+        <span className="tool-icon user-search" aria-hidden="true"><UserSearch size={19} /></span>
+        <span className="tool-copy">
+          <span className="tool-title">User Lookup</span>
+          <span className="tool-description">Get information about a discord user by ID.</span>
+        </span>
+        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
+      </Link>
+
+      <Link className="tool-link" href="/server-lookup">
+        <span className="tool-icon server-search" aria-hidden="true"><ServerSearch size={19} /></span>
+        <span className="tool-copy">
+          <span className="tool-title">Server Lookup</span>
+          <span className="tool-description">Get information about a discord server by invite.</span>
         </span>
         <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
       </Link>
