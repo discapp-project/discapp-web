@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -64,6 +64,20 @@ const tools = [
     href: '/vanity-checker',
     icon: Link2,
     iconClass: 'vanity-icon'
+  },
+  {
+    title: 'Asset stealer',
+    description: 'Steal assets from a Discord server.',
+    href: '/asset-stealer',
+    icon: Package,
+    iconClass: 'package'
+  },
+  {
+    title: 'Snowflake Decoder',
+    description: 'Decode a Discord snowflake to get the internal information.',
+    href: '/snowflake-decoder',
+    icon: Snowflake,
+    iconClass: 'snowflake'
   }
 ];
 
@@ -147,7 +161,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer style={{ marginTop: '48px', paddingTop: '20px', borderTop: '1px solid #1e2024', color: '#80848e', fontSize: '12px', textAlign: 'center', lineHeight: '1.5' }}>
+      <footer style={{ marginTop: '48px', paddingTop: '20px', color: '#80848e', fontSize: '12px', textAlign: 'center', lineHeight: '1.5' }}>
         Botless is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Discord Inc.
       </footer>
     </main>
