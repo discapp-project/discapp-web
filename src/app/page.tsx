@@ -38,13 +38,6 @@ const tools = [
     iconClass: 'badge-plus'
   },
   {
-    title: 'Web Embed Builder',
-    description: 'Simple tool to help you configure discord embeds for your site.',
-    href: '/web-embed-builder',
-    icon: GlobeCode,
-    iconClass: 'globe-code'
-  },
-  {
     title: 'User Lookup',
     description: 'Get information about a discord user by ID.',
     href: '/user-lookup',
