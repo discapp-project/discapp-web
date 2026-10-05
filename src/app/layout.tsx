@@ -14,7 +14,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div className="app-shell">
           <nav className="topbar" aria-label="Main navigation">
             <Link className="brand" href="/">BOTLESS</Link>
-            <Link className="topbar-link" href="https://discord.gg/ymc3Ba4qk9">Support</Link>
+            <Link className="topbar-link" href="https://discord.gg/ymc3Ba4qk9">Community</Link>
           </nav>
           {children}
         </div>
