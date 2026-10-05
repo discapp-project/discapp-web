@@ -1,68 +1,155 @@
-﻿import Link from "next/link";
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Server } from "lucide-react";
-import { ServerSearch } from "./components/icons/ServerSearch";
+﻿'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search } from 'lucide-react';
+import { ServerSearch } from './components/icons/ServerSearch';
+
+const officialPages = [
+  {
+    title: 'Botless News',
+    description: 'Latest updates, feature releases, and announcements.',
+    href: '/botless-news',
+    icon: Newspaper,
+    iconClass: 'news-icon'
+  },
+];
+
+const tools = [
+  {
+    title: 'Webhook Builder',
+    description: 'Create Discord messages with embeds, delivery options, and live preview.',
+    href: '/webhook-builder',
+    icon: Webhook,
+    iconClass: 'webhook-icon'
+  },
+  {
+    title: 'Automod Library',
+    description: 'View and copy automod rules and regexes.',
+    href: '/automod-library',
+    icon: Library,
+    iconClass: 'library-icon'
+  },
+  {
+    title: 'Role Icon Maker',
+    description: 'Create custom role icons for your Discord server.',
+    href: '/role-icon-maker',
+    icon: BadgePlus,
+    iconClass: 'badge-plus'
+  },
+  {
+    title: 'Web Embed Builder',
+    description: 'Simple tool to help you configure discord embeds for your site.',
+    href: '/web-embed-builder',
+    icon: GlobeCode,
+    iconClass: 'globe-code'
+  },
+  {
+    title: 'User Lookup',
+    description: 'Get information about a discord user by ID.',
+    href: '/user-lookup',
+    icon: UserSearch,
+    iconClass: 'user-search'
+  },
+  {
+    title: 'Server Lookup',
+    description: 'Get information about a discord server by invite.',
+    href: '/server-lookup',
+    icon: ServerSearch,
+    iconClass: 'server-search'
+  },
+  {
+    title: 'Vanity URL Checker',
+    description: 'Check if a custom invite code or vanity URL is currently available.',
+    href: '/vanity-checker',
+    icon: Link2,
+    iconClass: 'vanity-icon'
+  }
+];
+
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredTools = tools.filter((tool) => {
+    const q = searchQuery.toLowerCase().trim();
+    return tool.title.toLowerCase().includes(q) || tool.description.toLowerCase().includes(q);
+  });
+
   return (
     <main className="page-wrap directory-page">
       <header className="directory-header">
-        <p className="page-kicker">DISCORD TOOLS</p>
-        <h1>Build for your community.</h1>
-        <p>Compose, preview, and send webhook messages.</p>
+        <p className="page-kicker">Botless Toolkit</p>
+        <h1>Find easy to use tools for your Discord server!</h1>
+        
+        <div style={{ marginTop: '20px', position: 'relative', width: '100%', maxWidth: '480px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#090a0c', borderRadius: '6px', border: '1px solid #1e2024', padding: '10px 14px' }}>
+            <Search size={16} style={{ color: '#80848e', marginRight: '10px', flexShrink: 0 }} aria-hidden="true" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tools by name or description..."
+              style={{ width: '100%', backgroundColor: 'transparent', color: '#f2f3f5', border: 'none', outline: 'none', fontSize: '14px', fontFamily: 'inherit' }}
+            />
+          </div>
+        </div>
       </header>
-      
-      <Link className="tool-link" href="/webhook-builder">
-        <span className="tool-icon webhook-icon" aria-hidden="true"><Webhook size={19} /></span>
-        <span className="tool-copy">
-          <span className="tool-title">Webhook Builder</span>
-          <span className="tool-description">Create Discord messages with embeds, delivery options, and live preview.</span>
-        </span>
-        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
-      </Link>
 
-      <Link className="tool-link" href="/automod-library">
-        <span className="tool-icon library-icon" aria-hidden="true"><Library size={19} /></span>
-        <span className="tool-copy">
-          <span className="tool-title">Automod Library</span>
-          <span className="tool-description">View and copy automod rules and regexes.</span>
-        </span>
-        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
-      </Link>
+      {!searchQuery && (
+        <section style={{ marginBottom: '32px' }}>
+          <p className="page-kicker" style={{ marginBottom: '12px', fontSize: '11px', fontWeight: '700', color: '#80848e' }}>Official Pages</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {officialPages.map((page) => {
+              const IconComponent = page.icon;
+              return (
+                <Link key={page.href} className="tool-link" href={page.href}>
+                  <span className={`tool-icon ${page.iconClass}`} aria-hidden="true">
+                    <IconComponent size={19} />
+                  </span>
+                  <span className="tool-copy">
+                    <span className="tool-title">{page.title}</span>
+                    <span className="tool-description">{page.description}</span>
+                  </span>
+                  <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
-      <Link className="tool-link" href="/role-icon-maker">
-        <span className="tool-icon badge-plus" aria-hidden="true"><BadgePlus size={19} /></span>
-        <span className="tool-copy">
-          <span className="tool-title">Role Icon Maker</span>
-          <span className="tool-description">Create custom role icons for your Discord server.</span>
-        </span>
-        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
-      </Link>
+      <section>
+        {!searchQuery && (
+          <p className="page-kicker" style={{ marginBottom: '12px', fontSize: '11px', fontWeight: '700', color: '#80848e' }}>Active Tools</p>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {filteredTools.length > 0 ? (
+            filteredTools.map((tool) => {
+              const IconComponent = tool.icon;
+              return (
+                <Link key={tool.href} className="tool-link" href={tool.href}>
+                  <span className={`tool-icon ${tool.iconClass}`} aria-hidden="true">
+                    <IconComponent size={19} />
+                  </span>
+                  <span className="tool-copy">
+                    <span className="tool-title">{tool.title}</span>
+                    <span className="tool-description">{tool.description}</span>
+                  </span>
+                  <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
+                </Link>
+              );
+            })
+          ) : (
+            <div style={{ padding: '24px 0', color: '#80848e', fontSize: '14px' }}>
+              No tools found matching "{searchQuery}".
+            </div>
+          )}
+        </div>
+      </section>
 
-      <Link className="tool-link" href="/web-embed-builder">
-        <span className="tool-icon globe-code" aria-hidden="true"><GlobeCode size={19} /></span>
-        <span className="tool-copy">
-          <span className="tool-title">Web Embed Builder</span>
-          <span className="tool-description">Simple tool to help you configure discord embeds for your site.</span>
-        </span>
-        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
-      </Link>
-
-      <Link className="tool-link" href="/user-lookup">
-        <span className="tool-icon user-search" aria-hidden="true"><UserSearch size={19} /></span>
-        <span className="tool-copy">
-          <span className="tool-title">User Lookup</span>
-          <span className="tool-description">Get information about a discord user by ID.</span>
-        </span>
-        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
-      </Link>
-
-      <Link className="tool-link" href="/server-lookup">
-        <span className="tool-icon server-search" aria-hidden="true"><ServerSearch size={19} /></span>
-        <span className="tool-copy">
-          <span className="tool-title">Server Lookup</span>
-          <span className="tool-description">Get information about a discord server by invite.</span>
-        </span>
-        <ArrowUpRight className="tool-arrow" size={16} aria-hidden="true" />
-      </Link>
+      <footer style={{ marginTop: '48px', paddingTop: '20px', borderTop: '1px solid #1e2024', color: '#80848e', fontSize: '12px', textAlign: 'center', lineHeight: '1.5' }}>
+        Botless is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Discord Inc.
+      </footer>
     </main>
   );
 }
