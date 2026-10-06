@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -71,6 +71,13 @@ const tools = [
     href: '/snowflake-decoder',
     icon: Snowflake,
     iconClass: 'snowflake'
+  },
+  {
+    title: 'Gradient Finder',
+    description: 'Find and customize beautiful color gradients for your roles.',
+    href: '/gradient-finder',
+    icon: Palette,
+    iconClass: 'palette'
   }
 ];
 
