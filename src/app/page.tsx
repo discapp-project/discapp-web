@@ -118,7 +118,7 @@ export default function Home() {
               return (
                 <Link key={page.href} className="tool-link" href={page.href}>
                   <span className={`tool-icon ${page.iconClass}`} aria-hidden="true">
-                    <IconComponent size={19} />
+                    <IconComponent size={24} />
                   </span>
                   <span className="tool-copy">
                     <span className="tool-title">{page.title}</span>
@@ -143,7 +143,7 @@ export default function Home() {
               return (
                 <Link key={tool.href} className="tool-link" href={tool.href}>
                   <span className={`tool-icon ${tool.iconClass}`} aria-hidden="true">
-                    <IconComponent size={19} />
+                    <IconComponent size={24} />
                   </span>
                   <span className="tool-copy">
                     <span className="tool-title">{tool.title}</span>
