@@ -1,1159 +1,1392 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState } from "react";
 import {
-  AlignLeft,
+  AlertCircle,
+  Check,
+  ChevronDown,
+  ChevronRight,
   Code2,
-  Eye,
-  EyeOff,
-  ExternalLink,
-  Grid,
+  Copy,
+  FileText,
   Image as ImageIcon,
-  Layers,
-  MessageSquare,
-  Minus,
+  Layout,
   Plus,
-  Radio,
   Send,
-  SeparatorHorizontal,
   Settings,
   Sparkles,
-  Trash2,
-  Check,
+  User,
+  Sliders,
+  X,
+  Palette,
+  ExternalLink,
+  Clock,
+  Type,
+  Minus,
+  Paperclip,
+  FolderPlus,
+  Grid,
 } from "lucide-react";
 
-type Tab = "message" | "embeds" | "delivery" | "json" | "preview";
-type EmbedMode = "standard" | "cv2";
-type CompV2BlockType = "text" | "button" | "separator" | "fields" | "media" | "action_row";
+type WorkspaceTab = "builder" | "bot_settings" | "dispatch" | "json";
 
-type CompV2Button = {
+type LinkButton = { id: string; label: string; url: string };
+type EmbedField = { id: string; name: string; value: string; inline: boolean };
+type MediaGalleryItem = { id: string; url: string };
+type AttachedFile = { id: string; fileName: string; url: string };
+
+type Embed = {
   id: string;
-  label: string;
-  style: "primary" | "secondary" | "success" | "danger" | "link";
-  customId?: string;
-  url?: string;
-  disabled?: boolean;
-};
-
-type EmbedFieldDraft = { id: string; name: string; value: string; inline: boolean };
-
-type CompV2Block = {
-  id: string;
-  type: CompV2BlockType;
-  content?: string;
-  separatorStyle?: "line" | "blank";
-  buttons?: CompV2Button[];
-  fields?: EmbedFieldDraft[];
-  mediaUrl?: string;
-};
-
-type EmbedDraft = {
-  id: string;
-  mode: EmbedMode;
-  hasColor: boolean;
-  color: string;
-  authorName: string;
-  authorUrl: string;
-  authorIconUrl: string;
-  title: string;
-  titleUrl: string;
-  description: string;
-  thumbnailUrl: string;
-  imageUrl: string;
-  footerText: string;
-  footerIconUrl: string;
-  timestamp: string;
-  fields: EmbedFieldDraft[];
-  blocks: CompV2Block[];
-};
-
-type SendResult = { kind: "success" | "error"; message: string };
-
-type DiscordEmbed = {
-  author?: { name: string; url?: string; icon_url?: string };
   title?: string;
-  url?: string;
+  titleUrl?: string;
   description?: string;
-  color?: number;
-  thumbnail?: { url: string };
-  image?: { url: string };
-  footer?: { text: string; icon_url?: string };
+  color?: string;
+  authorName?: string;
+  authorIconUrl?: string;
+  authorUrl?: string;
+  thumbnailUrl?: string;
+  imageUrl?: string;
+  footerText?: string;
+  footerIconUrl?: string;
   timestamp?: string;
-  fields?: { name: string; value: string; inline?: boolean }[];
-  components?: unknown[];
+  fields: EmbedField[];
 };
 
-const emptyEmbed = (id: string, mode: EmbedMode = "standard"): EmbedDraft => ({
-  id,
-  mode,
-  hasColor: true,
-  color: "#5865f2",
-  authorName: "",
-  authorUrl: "",
-  authorIconUrl: "",
-  title: "",
-  titleUrl: "",
-  description: "",
-  thumbnailUrl: "",
-  imageUrl: "",
-  footerText: "",
-  footerIconUrl: "",
-  timestamp: "",
-  fields: [],
-  blocks: [],
-});
+export default function DiscordStudioWorkspace() {
+  const [tab, setTab] = useState<WorkspaceTab>("builder");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
 
-function buttonStyleToType(style: CompV2Button["style"]) {
-  switch (style) {
-    case "primary": return 1;
-    case "secondary": return 2;
-    case "success": return 3;
-    case "danger": return 4;
-    case "link": return 5;
-    default: return 1;
-  }
-}
-
-function toDiscordCompV2Component(block: CompV2Block) {
-  switch (block.type) {
-    case "text":
-      return { type: 10, content: block.content ?? "" };
-    case "separator":
-      return { type: 11, divider: block.separatorStyle === "line" };
-    case "action_row":
-    case "button":
-      return {
-        type: 1,
-        components: (block.buttons ?? []).map((btn) => ({
-          type: 2,
-          style: buttonStyleToType(btn.style),
-          label: btn.label,
-          ...(btn.style === "link" ? { url: btn.url ?? "" } : { custom_id: btn.customId ?? `btn_${btn.id}` }),
-          disabled: !!btn.disabled,
-        })),
-      };
-    case "media":
-      return { type: 12, items: block.mediaUrl ? [{ media: { url: block.mediaUrl } }] : [] };
-    default:
-      return null;
-  }
-}
-
-function toDiscordEmbed(draft: EmbedDraft): DiscordEmbed | null {
-  const embed: DiscordEmbed = {};
-
-  if (draft.mode === "standard") {
-    if (draft.authorName.trim()) {
-      embed.author = {
-        name: draft.authorName.trim(),
-        ...(draft.authorUrl.trim() && { url: draft.authorUrl.trim() }),
-        ...(draft.authorIconUrl.trim() && { icon_url: draft.authorIconUrl.trim() }),
-      };
-    }
-
-    if (draft.title.trim()) embed.title = draft.title.trim();
-    if (draft.titleUrl.trim()) embed.url = draft.titleUrl.trim();
-    if (draft.description.trim()) embed.description = draft.description.trim();
-
-    if (draft.hasColor && draft.color) {
-      embed.color = Number.parseInt(draft.color.replace("#", ""), 16);
-    }
-
-    if (draft.thumbnailUrl.trim()) embed.thumbnail = { url: draft.thumbnailUrl.trim() };
-    if (draft.imageUrl.trim()) embed.image = { url: draft.imageUrl.trim() };
-
-    if (draft.footerText.trim()) {
-      embed.footer = {
-        text: draft.footerText.trim(),
-        ...(draft.footerIconUrl.trim() && { icon_url: draft.footerIconUrl.trim() }),
-      };
-    }
-
-    if (draft.timestamp) {
-      const ts = new Date(draft.timestamp);
-      if (!Number.isNaN(ts.getTime())) embed.timestamp = ts.toISOString();
-    }
-
-    const fields = draft.fields
-      .filter((field) => field.name.trim() && field.value.trim())
-      .map((field) => ({ name: field.name.trim(), value: field.value.trim(), inline: field.inline }));
-
-    if (fields.length) embed.fields = fields;
-  } else {
-    // Components V2 Mode
-    if (draft.hasColor && draft.color) {
-      embed.color = Number.parseInt(draft.color.replace("#", ""), 16);
-    }
-
-    const fieldBlocks = draft.blocks.filter((b) => b.type === "fields");
-    const fields = fieldBlocks
-      .flatMap((b) => b.fields ?? [])
-      .filter((field) => field.name.trim() && field.value.trim())
-      .map((field) => ({ name: field.name.trim(), value: field.value.trim(), inline: field.inline }));
-
-    if (fields.length) embed.fields = fields;
-
-    const compV2Components = draft.blocks
-      .filter((b) => b.type !== "fields")
-      .map(toDiscordCompV2Component)
-      .filter((c): c is NonNullable<ReturnType<typeof toDiscordCompV2Component>> => c !== null);
-
-    if (compV2Components.length > 0) embed.components = compV2Components;
-  }
-
-  return Object.keys(embed).length > 0 ? embed : null;
-}
-
-function Control({
-  label,
-  value,
-  onChange,
-  placeholder,
-  maxLength,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  maxLength?: number;
-  type?: string;
-}) {
-  return (
-    <label style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#b5bac1", fontWeight: 600 }}>
-        <span>{label}</span>
-        {maxLength !== undefined && <span style={{ opacity: 0.6 }}>{value.length}/{maxLength}</span>}
-      </div>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        maxLength={maxLength}
-        style={{
-          width: "100%",
-          padding: "10px 12px",
-          borderRadius: "6px",
-          border: "1px solid #1e1f22",
-          backgroundColor: "#1e1f22",
-          color: "#f2f3f5",
-          fontSize: "13px",
-          outline: "none",
-          boxSizing: "border-box",
-        }}
-      />
-    </label>
-  );
-}
-
-function DiscordButtonPreview({ btn }: { btn: CompV2Button }) {
-  const getStyles = () => {
-    switch (btn.style) {
-      case "primary": return { bg: "#5865f2", color: "#fff" };
-      case "secondary": return { bg: "#4e5058", color: "#fff" };
-      case "success": return { bg: "#23a55a", color: "#fff" };
-      case "danger": return { bg: "#f23f43", color: "#fff" };
-      case "link": return { bg: "#4e5058", color: "#b5bac1" };
-      default: return { bg: "#5865f2", color: "#fff" };
-    }
-  };
-
-  const style = getStyles();
-
-  return (
-    <button
-      type="button"
-      disabled={btn.disabled}
-      style={{
-        padding: "8px 16px",
-        backgroundColor: style.bg,
-        color: style.color,
-        border: "none",
-        borderRadius: "3px",
-        fontWeight: 500,
-        fontSize: "13px",
-        cursor: btn.disabled ? "not-allowed" : "pointer",
-        opacity: btn.disabled ? 0.5 : 1,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "6px",
-      }}
-    >
-      <span>{btn.label || "Button"}</span>
-      {btn.style === "link" && <ExternalLink size={12} />}
-    </button>
-  );
-}
-
-export default function WebhookBuilder() {
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [showWebhookUrl, setShowWebhookUrl] = useState(false);
+  // Global Payload Settings
   const [content, setContent] = useState("");
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [webhookUrl, setWebhookUrl] = useState("");
   const [threadId, setThreadId] = useState("");
-  const [tts, setTts] = useState(false);
-  const [useCompV2, setUseCompV2] = useState(true);
+  const [threadName, setThreadName] = useState("");
+  const [appliedTags, setAppliedTags] = useState("");
+  const [suppressEmbeds, setSuppressEmbeds] = useState(false);
   const [suppressNotifications, setSuppressNotifications] = useState(false);
-  const [embeds, setEmbeds] = useState<EmbedDraft[]>([]);
+
+  // Custom UI Elements
+  const [linkButtons, setLinkButtons] = useState<LinkButton[]>([]);
+  const [textDisplays, setTextDisplays] = useState<{ id: string; text: string }[]>([]);
+  const [mediaGallery, setMediaGallery] = useState<MediaGalleryItem[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [hasSeparator, setHasSeparator] = useState(false);
+
+  // Embed State & Containers
+  const [embeds, setEmbeds] = useState<Embed[]>([]);
   const [activeEmbedId, setActiveEmbedId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("message");
+
   const [isSending, setIsSending] = useState(false);
-  const [result, setResult] = useState<SendResult | null>(null);
+  const [sendResult, setSendResult] = useState<{ kind: "success" | "error"; message: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  // Raw JSON state for editable JSON editor
-  const [rawJsonInput, setRawJsonInput] = useState<string | null>(null);
-  const [jsonError, setJsonError] = useState<string | null>(null);
+  const activeEmbed = embeds.find((e) => e.id === activeEmbedId) || embeds[0] || null;
+  const hasEmbed = embeds.length > 0;
 
-  const activeEmbed = embeds.find((embed) => embed.id === activeEmbedId) ?? embeds[0] ?? null;
-  const discordEmbeds = useMemo(() => embeds.map(toDiscordEmbed).filter((e): e is DiscordEmbed => e !== null), [embeds]);
+  const updateActiveEmbed = (changes: Partial<Embed>) => {
+    if (!activeEmbed) return;
+    setEmbeds((prev) => prev.map((e) => (e.id === activeEmbed.id ? { ...e, ...changes } : e)));
+  };
 
+  const createNewEmbed = () => {
+    const newEmbed: Embed = {
+      id: crypto.randomUUID(),
+      fields: [],
+    };
+    setEmbeds((prev) => [...prev, newEmbed]);
+    setActiveEmbedId(newEmbed.id);
+    return newEmbed;
+  };
+
+  const addLinkButton = () => {
+    if (linkButtons.length >= 5) return;
+    setLinkButtons((prev) => [...prev, { id: crypto.randomUUID(), label: "Visit Link", url: "" }]);
+  };
+
+  const addTextDisplay = () => {
+    setTextDisplays((prev) => [...prev, { id: crypto.randomUUID(), text: "Additional text section..." }]);
+  };
+
+  const addMediaGalleryItem = () => {
+    if (mediaGallery.length >= 4) return;
+    setMediaGallery((prev) => [...prev, { id: crypto.randomUUID(), url: "" }]);
+  };
+
+  const addAttachedFile = () => {
+    setAttachedFiles((prev) => [...prev, { id: crypto.randomUUID(), fileName: "", url: "" }]);
+  };
+
+  const addComponent = (type: string) => {
+    setIsDropdownOpen(false);
+    setActiveSubmenu(null);
+
+    switch (type) {
+      case "button_row":
+        addLinkButton();
+        return;
+      case "container":
+      case "section":
+        createNewEmbed();
+        return;
+      case "text_display":
+        addTextDisplay();
+        return;
+      case "media_gallery":
+        addMediaGalleryItem();
+        return;
+      case "file":
+        addAttachedFile();
+        return;
+      case "separator":
+        setHasSeparator(true);
+        return;
+    }
+
+    if (!activeEmbed) return;
+
+    switch (type) {
+      case "title":
+        if (activeEmbed.title === undefined) updateActiveEmbed({ title: "" });
+        break;
+      case "description":
+        if (activeEmbed.description === undefined) updateActiveEmbed({ description: "" });
+        break;
+      case "color":
+        if (activeEmbed.color === undefined) updateActiveEmbed({ color: "#5865f2" });
+        break;
+      case "field":
+        if (activeEmbed.fields.length >= 25) return;
+        updateActiveEmbed({
+          fields: [
+            ...activeEmbed.fields,
+            { id: crypto.randomUUID(), name: "", value: "", inline: true },
+          ],
+        });
+        break;
+      case "author":
+        if (activeEmbed.authorName === undefined) updateActiveEmbed({ authorName: "", authorIconUrl: "", authorUrl: "" });
+        break;
+      case "thumbnail":
+        if (activeEmbed.thumbnailUrl === undefined) updateActiveEmbed({ thumbnailUrl: "" });
+        break;
+      case "image":
+        if (activeEmbed.imageUrl === undefined) updateActiveEmbed({ imageUrl: "" });
+        break;
+      case "footer":
+        if (activeEmbed.footerText === undefined) updateActiveEmbed({ footerText: "", footerIconUrl: "" });
+        break;
+      case "timestamp":
+        if (activeEmbed.timestamp === undefined) updateActiveEmbed({ timestamp: new Date().toISOString() });
+        break;
+    }
+  };
+
+  // Modern pill close button component
+  const DismissButton = ({ onClick, title = "Remove" }: { onClick: (e?: any) => void; title?: string }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "20px",
+        height: "20px",
+        borderRadius: "50%",
+        backgroundColor: "#2b2d31",
+        border: "1px solid #3f4147",
+        color: "#949ba4",
+        cursor: "pointer",
+        transition: "all 0.15s ease",
+        flexShrink: 0,
+        padding: 0,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "#da373c";
+        e.currentTarget.style.borderColor = "#da373c";
+        e.currentTarget.style.color = "#ffffff";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "#2b2d31";
+        e.currentTarget.style.borderColor = "#3f4147";
+        e.currentTarget.style.color = "#949ba4";
+      }}
+    >
+      <X size={12} strokeWidth={2.5} />
+    </button>
+  );
+
+  // Grouped Menu Definitions
+  const layoutItems = [
+    { id: "container", label: "Container / Embed", icon: FolderPlus },
+    { id: "section", label: "Section Block", icon: Layout },
+    { id: "separator", label: "Separator", icon: Minus, disabled: hasSeparator },
+  ];
+
+  const contentItems = [
+    { id: "text_display", label: "Text Display", icon: Type },
+    { id: "button_row", label: "Button Row", icon: ExternalLink, disabled: linkButtons.length >= 5 },
+  ];
+
+  const mediaItems = [
+    { id: "media_gallery", label: "Media Gallery", icon: Grid },
+    { id: "file", label: "Attached File", icon: Paperclip },
+  ];
+
+  const activeEmbedFields = useMemo(() => {
+    if (!hasEmbed || !activeEmbed) return [];
+    const list = [];
+    if (activeEmbed.title === undefined) list.push({ id: "title", label: "Title", icon: FileText });
+    if (activeEmbed.description === undefined) list.push({ id: "description", label: "Description", icon: FileText });
+    if (activeEmbed.color === undefined) list.push({ id: "color", label: "Accent Color Bar", icon: Palette });
+    if (activeEmbed.fields.length < 25) list.push({ id: "field", label: "Field Component", icon: FileText });
+    if (activeEmbed.authorName === undefined) list.push({ id: "author", label: "Author Header", icon: User });
+    if (activeEmbed.thumbnailUrl === undefined) list.push({ id: "thumbnail", label: "Thumbnail Image", icon: ImageIcon });
+    if (activeEmbed.imageUrl === undefined) list.push({ id: "image", label: "Banner Image", icon: ImageIcon });
+    if (activeEmbed.footerText === undefined) list.push({ id: "footer", label: "Footer Note", icon: Sparkles });
+    if (activeEmbed.timestamp === undefined) list.push({ id: "timestamp", label: "Timestamp", icon: Clock });
+    return list;
+  }, [hasEmbed, activeEmbed]);
+
+  // Payload computation
   const payload = useMemo(() => {
     let flags = 0;
-    if (suppressNotifications) flags |= 4096;
-    if (useCompV2) flags |= 8192;
+    if (suppressEmbeds) flags |= 1 << 2;
+    if (suppressNotifications) flags |= 1 << 12;
+
+    const validButtons = linkButtons
+      .filter((b) => b.label.trim() && b.url.trim())
+      .map((b) => ({
+        type: 2,
+        style: 5,
+        label: b.label.trim(),
+        url: b.url.trim(),
+      }));
+
+    const combinedContent = [
+      content.trim(),
+      ...textDisplays.map((t) => t.text.trim()).filter(Boolean),
+      attachedFiles
+        .filter((f) => f.url.trim())
+        .map((f) => `📌 Attachment: [${f.fileName || "File"}](${f.url})`)
+        .join("\n"),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const galleryEmbeds = mediaGallery
+      .filter((g) => g.url.trim())
+      .map((g) => ({ image: { url: g.url.trim() } }));
+
+    const standardEmbeds = embeds.map((e) => ({
+      ...(e.title?.trim() && { title: e.title }),
+      ...(e.titleUrl?.trim() && { url: e.titleUrl }),
+      ...(e.description?.trim() && { description: e.description }),
+      ...(e.color && { color: Number.parseInt(e.color.replace("#", ""), 16) || 0 }),
+      ...(e.authorName?.trim() && {
+        author: {
+          name: e.authorName,
+          icon_url: e.authorIconUrl?.trim() || undefined,
+          url: e.authorUrl?.trim() || undefined,
+        },
+      }),
+      ...(e.footerText?.trim() && {
+        footer: {
+          text: e.footerText,
+          icon_url: e.footerIconUrl?.trim() || undefined,
+        },
+      }),
+      ...(e.timestamp && { timestamp: e.timestamp }),
+      ...(e.thumbnailUrl?.trim() && { thumbnail: { url: e.thumbnailUrl } }),
+      ...(e.imageUrl?.trim() && { image: { url: e.imageUrl } }),
+      fields: e.fields
+        .filter((f) => f.name.trim() && f.value.trim())
+        .map((f) => ({ name: f.name, value: f.value, inline: f.inline })),
+    }));
+
+    const components = validButtons.length > 0 ? [{ type: 1, components: validButtons }] : undefined;
 
     return {
-      ...(content.length > 0 && { content }),
-      ...(username.trim() && { username: username.trim() }),
-      ...(avatarUrl.trim() && { avatar_url: avatarUrl.trim() }),
-      ...(tts && { tts: true }),
-      ...(discordEmbeds.length > 0 && { embeds: discordEmbeds }),
-      ...(flags > 0 && { flags }),
-    };
-  }, [avatarUrl, content, discordEmbeds, suppressNotifications, tts, useCompV2, username]);
-
-  const payloadJson = useMemo(() => JSON.stringify(payload, null, 2), [payload]);
-
-  // Keep json editor content in sync unless user is editing
-  const jsonEditorValue = rawJsonInput !== null ? rawJsonInput : payloadJson;
-
-  const handleApplyJson = () => {
-    try {
-      setJsonError(null);
-      const parsed = JSON.parse(jsonEditorValue);
-
-      if (typeof parsed.content === "string") setContent(parsed.content);
-      if (typeof parsed.username === "string") setUsername(parsed.username);
-      if (typeof parsed.avatar_url === "string") setAvatarUrl(parsed.avatar_url);
-      if (typeof parsed.tts === "boolean") setTts(parsed.tts);
-
-      if (typeof parsed.flags === "number") {
-        setSuppressNotifications((parsed.flags & 4096) !== 0);
-        setUseCompV2((parsed.flags & 8192) !== 0);
-      }
-
-      if (Array.isArray(parsed.embeds)) {
-        const importedEmbeds: EmbedDraft[] = parsed.embeds.map((emb: DiscordEmbed) => {
-          const id = crypto.randomUUID();
-          return {
-            id,
-            mode: "standard",
-            hasColor: emb.color !== undefined,
-            color: emb.color ? `#${emb.color.toString(16).padStart(6, "0")}` : "#5865f2",
-            authorName: emb.author?.name ?? "",
-            authorUrl: emb.author?.url ?? "",
-            authorIconUrl: emb.author?.icon_url ?? "",
-            title: emb.title ?? "",
-            titleUrl: emb.url ?? "",
-            description: emb.description ?? "",
-            thumbnailUrl: emb.thumbnail?.url ?? "",
-            imageUrl: emb.image?.url ?? "",
-            footerText: emb.footer?.text ?? "",
-            footerIconUrl: emb.footer?.icon_url ?? "",
-            timestamp: emb.timestamp ? new Date(emb.timestamp).toISOString().slice(0, 16) : "",
-            fields: Array.isArray(emb.fields)
-              ? emb.fields.map((f) => ({
-                  id: crypto.randomUUID(),
-                  name: f.name,
-                  value: f.value,
-                  inline: !!f.inline,
-                }))
-              : [],
-            blocks: [],
-          };
-        });
-
-        setEmbeds(importedEmbeds);
-        if (importedEmbeds.length > 0) setActiveEmbedId(importedEmbeds[0].id);
-      }
-
-      setRawJsonInput(null);
-      setResult({ kind: "success", message: "JSON imported and applied successfully." });
-    } catch (err) {
-      setJsonError(err instanceof Error ? err.message : "Invalid JSON format.");
-    }
-  };
-
-  const deleteWebhookFromDiscord = async () => {
-    if (!webhookUrl.trim()) return;
-    if (!confirm("Are you sure you want to permanently delete this webhook from Discord?")) return;
-
-    try {
-      const res = await fetch(webhookUrl.trim(), { method: "DELETE" });
-      if (res.ok) {
-        setWebhookUrl("");
-        setResult({ kind: "success", message: "Webhook permanently deleted from Discord." });
-      } else {
-        setResult({ kind: "error", message: `Failed to delete webhook (${res.status}).` });
-      }
-    } catch {
-      setResult({ kind: "error", message: "Network error while attempting to delete webhook." });
-    }
-  };
-
-  const updateEmbed = (id: string, changes: Partial<EmbedDraft>) => {
-    setEmbeds((current) => current.map((embed) => (embed.id === id ? { ...embed, ...changes } : embed)));
-  };
-
-  const addEmbed = (mode: EmbedMode = "standard") => {
-    if (embeds.length >= 10) return;
-    const nextEmbed = emptyEmbed(crypto.randomUUID(), mode);
-    setEmbeds((current) => [...current, nextEmbed]);
-    setActiveEmbedId(nextEmbed.id);
-    setActiveTab("embeds");
-  };
-
-  const removeEmbed = (id: string) => {
-    const nextEmbeds = embeds.filter((embed) => embed.id !== id);
-    setEmbeds(nextEmbeds);
-    setActiveEmbedId(nextEmbeds[0]?.id ?? null);
-  };
-
-  const addBlockToEmbed = (type: CompV2BlockType) => {
-    if (!activeEmbed) return;
-    const newBlock: CompV2Block = {
-      id: crypto.randomUUID(),
-      type,
-      ...(type === "text" && { content: "" }),
-      ...(type === "separator" && { separatorStyle: "line" }),
-      ...(type === "action_row" && {
-        buttons: [{ id: crypto.randomUUID(), label: "Button", style: "primary", customId: `btn_${Date.now()}` }],
+      ...(combinedContent && { content: combinedContent }),
+      ...(username.trim() && { username }),
+      ...(avatarUrl.trim() && { avatar_url: avatarUrl }),
+      ...(threadName.trim() && { thread_name: threadName }),
+      ...(appliedTags.trim() && {
+        applied_tags: appliedTags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
       }),
-      ...(type === "fields" && { fields: [{ id: crypto.randomUUID(), name: "", value: "", inline: false }] }),
-      ...(type === "media" && { mediaUrl: "" }),
+      ...(flags > 0 && { flags }),
+      ...(components && { components }),
+      embeds: [...standardEmbeds, ...galleryEmbeds],
     };
+  }, [content, textDisplays, attachedFiles, mediaGallery, username, avatarUrl, threadName, appliedTags, suppressEmbeds, suppressNotifications, linkButtons, embeds]);
 
-    updateEmbed(activeEmbed.id, { blocks: [...activeEmbed.blocks, newBlock] });
-  };
+  const jsonString = JSON.stringify(payload, null, 2);
 
-  const updateBlock = (blockId: string, changes: Partial<CompV2Block>) => {
-    if (!activeEmbed) return;
-    updateEmbed(activeEmbed.id, {
-      blocks: activeEmbed.blocks.map((b) => (b.id === blockId ? { ...b, ...changes } : b)),
-    });
-  };
+  const handleDispatch = async () => {
+    setSendResult(null);
+    if (!webhookUrl.trim()) {
+      setSendResult({ kind: "error", message: "Please configure a Webhook URL in Deploy settings." });
+      setTab("dispatch");
+      return;
+    }
 
-  const removeBlock = (blockId: string) => {
-    if (!activeEmbed) return;
-    updateEmbed(activeEmbed.id, {
-      blocks: activeEmbed.blocks.filter((b) => b.id !== blockId),
-    });
-  };
-
-  const sendWebhook = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setResult(null);
     setIsSending(true);
-
     try {
-      const response = await fetch("/api/webhook/execute", {
+      const target = webhookUrl.trim() + (threadId.trim() ? `?thread_id=${threadId.trim()}` : "");
+      const res = await fetch(target, {
         method: "POST",
-        headers: { "content-type": "application/json" },
-        body: rawJsonInput !== null ? rawJsonInput : payloadJson,
+        headers: { "Content-Type": "application/json" },
+        body: jsonString,
       });
-      setResult({
-        kind: response.ok ? "success" : "error",
-        message: response.ok ? "Webhook delivered successfully." : `Status ${response.status}`,
-      });
+
+      if (res.ok || res.status === 204) {
+        setSendResult({ kind: "success", message: "Payload dispatched successfully!" });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setSendResult({ kind: "error", message: err.message || `Discord Error: ${res.status}` });
+      }
     } catch {
-      setResult({ kind: "error", message: "Failed to send payload." });
+      setSendResult({ kind: "error", message: "Network error connecting to Discord Webhook." });
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <main style={{ padding: "32px 24px", maxWidth: "1000px", margin: "0 auto", color: "#f2f3f5", fontFamily: "sans-serif" }}>
-      <header style={{ marginBottom: "24px" }}>
-        <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}>Discord Webhook Builder</h1>
-        <p style={{ color: "#949ba4", fontSize: "14px", marginTop: "4px" }}>Design standard embeds or build custom Components V2 embeds</p>
-      </header>
+    <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#dbdee1", fontFamily: "'gg sans', 'Helvetica Neue', Helvetica, Arial, sans-serif", padding: "20px" }}>
+      <div style={{ maxWidth: "900px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
 
-      <form onSubmit={sendWebhook}>
-        {/* Top Control Panel */}
-        <div style={{ backgroundColor: "#2b2d31", padding: "20px", borderRadius: "12px", marginBottom: "24px", border: "1px solid #35363c" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-            <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>DISCORD WEBHOOK URL</span>
-            <div style={{ display: "flex", gap: "16px" }}>
-              <button
-                type="button"
-                onClick={() => setShowWebhookUrl((v) => !v)}
-                style={{ background: "none", border: "none", color: "#b5bac1", cursor: "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                {showWebhookUrl ? <EyeOff size={14} /> : <Eye size={14} />} Toggle Visibility
-              </button>
-              {webhookUrl && (
-                <button
-                  type="button"
-                  onClick={deleteWebhookFromDiscord}
-                  style={{ background: "none", border: "none", color: "#f23f43", cursor: "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  <Trash2 size={14} /> Delete Webhook
-                </button>
-              )}
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <input
-              type={showWebhookUrl ? "text" : "password"}
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://discord.com/api/webhooks/..."
-              style={{ flex: 1, padding: "10px 14px", borderRadius: "6px", border: "1px solid #1e1f22", backgroundColor: "#1e1f22", color: "#fff", fontSize: "14px" }}
-            />
-            {webhookUrl && (
-              <button
-                type="button"
-                onClick={() => setWebhookUrl("")}
-                style={{ padding: "10px 16px", backgroundColor: "#313338", border: "none", color: "#fff", borderRadius: "6px", cursor: "pointer", fontWeight: 500 }}
-              >
-                Clear
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={isSending}
-              style={{ padding: "10px 20px", backgroundColor: "#23a55a", color: "#fff", border: "none", borderRadius: "6px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
-            >
-              <Send size={16} />
-              {isSending ? "Sending..." : "Send Webhook"}
-            </button>
-          </div>
-          {result && (
-            <div style={{ marginTop: "12px", padding: "10px", borderRadius: "6px", backgroundColor: result.kind === "success" ? "rgba(35, 165, 90, 0.15)" : "rgba(242, 63, 67, 0.15)", border: `1px solid ${result.kind === "success" ? "#23a55a" : "#f23f43"}`, color: result.kind === "success" ? "#23a55a" : "#f23f43", fontSize: "13px" }}>
-              {result.message}
-            </div>
-          )}
-        </div>
-
-        {/* Builder View */}
-        <div>
-          {/* Main Navigation Tabs */}
-          <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #35363c", marginBottom: "20px" }}>
+        {/* Workspace Navigation Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #2b2d31", paddingBottom: "12px" }}>
+          <div style={{ display: "flex", gap: "6px" }}>
             {[
-              { id: "message", label: "Message", icon: MessageSquare },
-              { id: "embeds", label: `Embeds (${embeds.length})`, icon: Layers },
-              { id: "delivery", label: "Delivery", icon: Settings },
-              { id: "json", label: "JSON", icon: Code2 },
-              { id: "preview", label: "Preview", icon: Eye },
-            ].map((tab) => {
-              const Icon = tab.icon;
+              { id: "builder", label: "Canvas Builder", icon: Layout },
+              { id: "bot_settings", label: "Bot & Signals", icon: Settings },
+              { id: "dispatch", label: "Deploy & Webhook", icon: Send },
+              { id: "json", label: "Raw JSON", icon: Code2 },
+            ].map((item) => {
+              const Icon = item.icon;
+              const active = tab === item.id;
               return (
                 <button
-                  key={tab.id}
+                  key={item.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id as Tab)}
+                  onClick={() => setTab(item.id as WorkspaceTab)}
                   style={{
-                    padding: "10px 16px",
-                    background: "none",
-                    border: "none",
-                    borderBottom: activeTab === tab.id ? "2px solid #5865f2" : "2px solid transparent",
-                    color: activeTab === tab.id ? "#fff" : "#949ba4",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    fontSize: "14px",
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px",
+                    gap: "6px",
+                    padding: "8px 14px",
+                    borderRadius: "6px",
+                    border: "none",
+                    backgroundColor: active ? "#2b2d31" : "transparent",
+                    color: active ? "#ffffff" : "#949ba4",
+                    fontSize: "13px",
+                    fontWeight: active ? 600 : 500,
+                    cursor: "pointer",
+                    transition: "background 0.15s ease",
                   }}
                 >
-                  <Icon size={16} />
-                  <span>{tab.label}</span>
+                  <Icon size={15} />
+                  {item.label}
                 </button>
               );
             })}
           </div>
 
-          {/* MESSAGE TAB */}
-          {activeTab === "message" && (
-            <div style={{ backgroundColor: "#2b2d31", padding: "20px", borderRadius: "8px", border: "1px solid #35363c" }}>
-              <Control label="Main Message Content" value={content} onChange={setContent} maxLength={2000} placeholder="Type standard message content or leave empty if sending only embeds..." />
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={handleDispatch}
+            disabled={isSending}
+            style={{
+              backgroundColor: "#23a55a",
+              color: "#fff",
+              border: "none",
+              padding: "8px 18px",
+              borderRadius: "6px",
+              fontSize: "13px",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer",
+            }}
+          >
+            {isSending ? "Dispatching..." : "Dispatch Payload"}
+          </button>
+        </div>
 
-          {/* EMBEDS TAB */}
-          {activeTab === "embeds" && (
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <span style={{ fontSize: "13px", color: "#b5bac1", fontWeight: 600 }}>EMBED STACK ({embeds.length}/10)</span>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button
-                    type="button"
-                    onClick={() => addEmbed("standard")}
-                    style={{ padding: "8px 14px", backgroundColor: "#5865f2", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}
-                  >
-                    <Plus size={14} /> Add Standard Embed
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addEmbed("cv2")}
-                    style={{ padding: "8px 14px", backgroundColor: "#313338", color: "#fff", border: "1px solid #5865f2", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}
-                  >
-                    <Sparkles size={14} color="#5865f2" /> Add Components V2 Canvas
-                  </button>
-                </div>
+        {/* TAB 1: CANVAS BUILDER */}
+        {tab === "builder" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+            {/* Component Injector Bar with Cascading Submenus */}
+            <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid #2b2d31" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Sliders size={16} color="#949ba4" />
+                <span style={{ fontSize: "12px", color: "#949ba4", fontWeight: 700, letterSpacing: "0.5px" }}>COMPONENT INJECTOR</span>
               </div>
 
-              {/* Embed List Selector */}
-              {embeds.length > 0 && (
-                <div style={{ display: "flex", gap: "8px", marginBottom: "16px", overflowX: "auto", paddingBottom: "4px" }}>
-                  {embeds.map((e, idx) => (
-                    <button
-                      key={e.id}
-                      type="button"
-                      onClick={() => setActiveEmbedId(e.id)}
-                      style={{
-                        padding: "8px 14px",
-                        backgroundColor: activeEmbed?.id === e.id ? "#35363c" : "#2b2d31",
-                        color: activeEmbed?.id === e.id ? "#fff" : "#949ba4",
-                        border: activeEmbed?.id === e.id ? "1px solid #5865f2" : "1px solid transparent",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      {e.mode === "cv2" ? <Sparkles size={12} color="#5865f2" /> : null}
-                      <span>{e.title || `Embed #${idx + 1}`}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {activeEmbed && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "20px", backgroundColor: "#2b2d31", padding: "20px", borderRadius: "8px", border: "1px solid #35363c" }}>
-                  {/* Mode Selector Toggle */}
-                  <div style={{ display: "flex", backgroundColor: "#1e1f22", borderRadius: "6px", padding: "4px", border: "1px solid #35363c" }}>
-                    <button
-                      type="button"
-                      onClick={() => updateEmbed(activeEmbed.id, { mode: "standard" })}
-                      style={{
-                        flex: 1,
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "none",
-                        backgroundColor: activeEmbed.mode === "standard" ? "#35363c" : "transparent",
-                        color: activeEmbed.mode === "standard" ? "#fff" : "#949ba4",
-                        cursor: "pointer",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Standard Embed
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateEmbed(activeEmbed.id, { mode: "cv2" })}
-                      style={{
-                        flex: 1,
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "none",
-                        backgroundColor: activeEmbed.mode === "cv2" ? "#35363c" : "transparent",
-                        color: activeEmbed.mode === "cv2" ? "#fff" : "#949ba4",
-                        cursor: "pointer",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <Sparkles size={14} color="#5865f2" /> Components V2 Canvas
-                    </button>
-                  </div>
-
-                  {/* Accent Color Toggle */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#1e1f22", padding: "14px", borderRadius: "6px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", cursor: "pointer", userSelect: "none" }}>
-                      <input
-                        type="checkbox"
-                        checked={activeEmbed.hasColor}
-                        onChange={(e) => updateEmbed(activeEmbed.id, { hasColor: e.target.checked })}
-                      />
-                      <span style={{ fontWeight: 600 }}>Enable Accent Side Strip Color</span>
-                    </label>
-                    {activeEmbed.hasColor && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <input
-                          type="color"
-                          value={activeEmbed.color}
-                          onChange={(e) => updateEmbed(activeEmbed.id, { color: e.target.value })}
-                          style={{ border: "none", background: "none", cursor: "pointer", width: "36px", height: "36px" }}
-                        />
-                        <input
-                          type="text"
-                          value={activeEmbed.color}
-                          onChange={(e) => updateEmbed(activeEmbed.id, { color: e.target.value })}
-                          style={{ flex: 1, padding: "8px 12px", borderRadius: "4px", border: "1px solid #35363c", backgroundColor: "#2b2d31", color: "#fff", fontSize: "13px" }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* STANDARD EMBED FORM */}
-                  {activeEmbed.mode === "standard" && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                      {/* Author */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>AUTHOR</span>
-                        <Control label="Author Name" value={activeEmbed.authorName} onChange={(val) => updateEmbed(activeEmbed.id, { authorName: val })} maxLength={256} />
-                        <Control label="Author URL" value={activeEmbed.authorUrl} onChange={(val) => updateEmbed(activeEmbed.id, { authorUrl: val })} placeholder="https://..." />
-                        <Control label="Author Icon URL" value={activeEmbed.authorIconUrl} onChange={(val) => updateEmbed(activeEmbed.id, { authorIconUrl: val })} placeholder="https://..." />
-                      </div>
-
-                      {/* Title & Body */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>TITLE & DESCRIPTION</span>
-                        <Control label="Title" value={activeEmbed.title} onChange={(val) => updateEmbed(activeEmbed.id, { title: val })} maxLength={256} />
-                        <Control label="Title URL" value={activeEmbed.titleUrl} onChange={(val) => updateEmbed(activeEmbed.id, { titleUrl: val })} placeholder="https://..." />
-                        <Control label="Description" value={activeEmbed.description} onChange={(val) => updateEmbed(activeEmbed.id, { description: val })} maxLength={4096} />
-                      </div>
-
-                      {/* Media */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>MEDIA ATTACHMENTS</span>
-                        <Control label="Thumbnail URL" value={activeEmbed.thumbnailUrl} onChange={(val) => updateEmbed(activeEmbed.id, { thumbnailUrl: val })} placeholder="https://..." />
-                        <Control label="Banner Image URL" value={activeEmbed.imageUrl} onChange={(val) => updateEmbed(activeEmbed.id, { imageUrl: val })} placeholder="https://..." />
-                      </div>
-
-                      {/* Standard Fields */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>FIELDS</span>
-                        {activeEmbed.fields.map((field, fIdx) => (
-                          <div key={field.id} style={{ display: "flex", flexDirection: "column", gap: "8px", backgroundColor: "#232428", padding: "12px", borderRadius: "6px", border: "1px solid #2b2d31" }}>
-                            <Control label="Field Name" value={field.name} onChange={(val) => {
-                              const next = [...activeEmbed.fields];
-                              next[fIdx].name = val;
-                              updateEmbed(activeEmbed.id, { fields: next });
-                            }} />
-                            <Control label="Field Value" value={field.value} onChange={(val) => {
-                              const next = [...activeEmbed.fields];
-                              next[fIdx].value = val;
-                              updateEmbed(activeEmbed.id, { fields: next });
-                            }} />
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
-                              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#b5bac1", cursor: "pointer" }}>
-                                <input type="checkbox" checked={field.inline} onChange={(e) => {
-                                  const next = [...activeEmbed.fields];
-                                  next[fIdx].inline = e.target.checked;
-                                  updateEmbed(activeEmbed.id, { fields: next });
-                                }} /> Inline Field
-                              </label>
-                              <button type="button" onClick={() => {
-                                const next = activeEmbed.fields.filter((_, i) => i !== fIdx);
-                                updateEmbed(activeEmbed.id, { fields: next });
-                              }} style={{ background: "none", border: "none", color: "#f23f43", cursor: "pointer", fontSize: "12px" }}>
-                                Remove Field
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                        <button type="button" onClick={() => updateEmbed(activeEmbed.id, { fields: [...activeEmbed.fields, { id: crypto.randomUUID(), name: "", value: "", inline: false }] })} style={{ padding: "8px 12px", backgroundColor: "#1e1f22", color: "#fff", border: "1px solid #35363c", borderRadius: "6px", fontSize: "12px", cursor: "pointer", alignSelf: "flex-start", fontWeight: 600 }}>
-                          + Add Field
-                        </button>
-                      </div>
-
-                      {/* Footer & Timestamp */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>FOOTER & TIMESTAMP</span>
-                        <Control label="Footer Text" value={activeEmbed.footerText} onChange={(val) => updateEmbed(activeEmbed.id, { footerText: val })} maxLength={2048} />
-                        <Control label="Footer Icon URL" value={activeEmbed.footerIconUrl} onChange={(val) => updateEmbed(activeEmbed.id, { footerIconUrl: val })} placeholder="https://..." />
-                        <Control label="Timestamp" type="datetime-local" value={activeEmbed.timestamp} onChange={(val) => updateEmbed(activeEmbed.id, { timestamp: val })} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* COMPONENTS V2 CANVAS MODE */}
-                  {activeEmbed.mode === "cv2" && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                      <div style={{ backgroundColor: "#232428", padding: "16px", borderRadius: "8px", border: "1px dashed #35363c" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", display: "block", marginBottom: "10px", letterSpacing: "0.5px" }}>ADD COMPONENTS TO CANVAS</span>
-                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                          <button type="button" onClick={() => addBlockToEmbed("text")} style={{ padding: "8px 12px", backgroundColor: "#2b2d31", color: "#fff", border: "1px solid #35363c", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}><AlignLeft size={14} /> Text</button>
-                          <button type="button" onClick={() => addBlockToEmbed("fields")} style={{ padding: "8px 12px", backgroundColor: "#2b2d31", color: "#fff", border: "1px solid #35363c", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}><Grid size={14} /> Fields</button>
-                          <button type="button" onClick={() => addBlockToEmbed("action_row")} style={{ padding: "8px 12px", backgroundColor: "#2b2d31", color: "#fff", border: "1px solid #35363c", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}><Radio size={14} /> Action Row (Buttons)</button>
-                          <button type="button" onClick={() => addBlockToEmbed("separator")} style={{ padding: "8px 12px", backgroundColor: "#2b2d31", color: "#fff", border: "1px solid #35363c", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}><SeparatorHorizontal size={14} /> Separator</button>
-                          <button type="button" onClick={() => addBlockToEmbed("media")} style={{ padding: "8px 12px", backgroundColor: "#2b2d31", color: "#fff", border: "1px solid #35363c", borderRadius: "6px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}><ImageIcon size={14} /> Media Block</button>
-                        </div>
-                      </div>
-
-                      {/* Canvas Empty State */}
-                      {activeEmbed.blocks.length === 0 && (
-                        <div style={{ padding: "40px 20px", textAlign: "center", color: "#949ba4", border: "2px dashed #2b2d31", borderRadius: "8px" }}>
-                          <p style={{ fontSize: "14px", fontWeight: 600 }}>Blank Canvas</p>
-                          <p style={{ fontSize: "12px", marginTop: "4px" }}>Click any button above to build your custom embed UI</p>
-                        </div>
-                      )}
-
-                      {/* Canvas Component Stack */}
-                      {activeEmbed.blocks.map((block) => (
-                        <div key={block.id} style={{ backgroundColor: "#232428", padding: "16px", borderRadius: "8px", border: "1px solid #2b2d31", display: "flex", flexDirection: "column", gap: "12px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", fontWeight: 700, color: "#949ba4", letterSpacing: "0.5px" }}>
-                            <span>COMPONENT: {block.type.toUpperCase()}</span>
-                            <button type="button" onClick={() => removeBlock(block.id)} style={{ background: "none", border: "none", color: "#f23f43", cursor: "pointer" }}><Trash2 size={14} /></button>
-                          </div>
-
-                          {/* Text Component */}
-                          {block.type === "text" && (
-                            <Control label="Text Content" value={block.content ?? ""} onChange={(val) => updateBlock(block.id, { content: val })} placeholder="Type text block content..." />
-                          )}
-
-                          {/* Fields Component */}
-                          {block.type === "fields" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                              {(block.fields ?? []).map((field, fIdx) => (
-                                <div key={field.id} style={{ display: "flex", flexDirection: "column", gap: "8px", backgroundColor: "#1e1f22", padding: "10px", borderRadius: "6px" }}>
-                                  <Control label="Field Name" value={field.name} onChange={(val) => {
-                                    const nextFields = [...(block.fields ?? [])];
-                                    nextFields[fIdx].name = val;
-                                    updateBlock(block.id, { fields: nextFields });
-                                  }} />
-                                  <Control label="Field Value" value={field.value} onChange={(val) => {
-                                    const nextFields = [...(block.fields ?? [])];
-                                    nextFields[fIdx].value = val;
-                                    updateBlock(block.id, { fields: nextFields });
-                                  }} />
-                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                    <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#b5bac1", cursor: "pointer" }}>
-                                      <input type="checkbox" checked={field.inline} onChange={(e) => {
-                                        const nextFields = [...(block.fields ?? [])];
-                                        nextFields[fIdx].inline = e.target.checked;
-                                        updateBlock(block.id, { fields: nextFields });
-                                      }} /> Inline
-                                    </label>
-                                    <button type="button" onClick={() => {
-                                      const nextFields = (block.fields ?? []).filter((_, i) => i !== fIdx);
-                                      updateBlock(block.id, { fields: nextFields });
-                                    }} style={{ background: "none", border: "none", color: "#f23f43", cursor: "pointer", fontSize: "12px" }}>Remove</button>
-                                  </div>
-                                </div>
-                              ))}
-                              <button type="button" onClick={() => updateBlock(block.id, { fields: [...(block.fields ?? []), { id: crypto.randomUUID(), name: "", value: "", inline: false }] })} style={{ padding: "6px 12px", backgroundColor: "#1e1f22", color: "#fff", border: "none", borderRadius: "4px", fontSize: "12px", cursor: "pointer", alignSelf: "flex-start", fontWeight: 500 }}>+ Add Field</button>
-                            </div>
-                          )}
-
-                          {/* Action Row Component */}
-                          {block.type === "action_row" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                              {(block.buttons ?? []).map((btn, bIdx) => (
-                                <div key={btn.id} style={{ display: "flex", flexDirection: "column", gap: "8px", backgroundColor: "#1e1f22", padding: "10px", borderRadius: "6px" }}>
-                                  <Control label="Button Label" value={btn.label} onChange={(val) => {
-                                    const nextBtns = [...(block.buttons ?? [])];
-                                    nextBtns[bIdx].label = val;
-                                    updateBlock(block.id, { buttons: nextBtns });
-                                  }} />
-                                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                                    <span style={{ fontSize: "12px", color: "#b5bac1", fontWeight: 600 }}>Button Style</span>
-                                    <select value={btn.style} onChange={(e) => {
-                                      const nextBtns = [...(block.buttons ?? [])];
-                                      nextBtns[bIdx].style = e.target.value as CompV2Button["style"];
-                                      updateBlock(block.id, { buttons: nextBtns });
-                                    }} style={{ width: "100%", padding: "8px 10px", backgroundColor: "#2b2d31", border: "1px solid #35363c", color: "#fff", borderRadius: "4px", fontSize: "13px" }}>
-                                      <option value="primary">Primary (Blue)</option>
-                                      <option value="secondary">Secondary (Grey)</option>
-                                      <option value="success">Success (Green)</option>
-                                      <option value="danger">Danger (Red)</option>
-                                      <option value="link">Link (URL)</option>
-                                    </select>
-                                  </div>
-                                  {btn.style === "link" ? (
-                                    <Control label="URL Link" value={btn.url ?? ""} onChange={(val) => {
-                                      const nextBtns = [...(block.buttons ?? [])];
-                                      nextBtns[bIdx].url = val;
-                                      updateBlock(block.id, { buttons: nextBtns });
-                                    }} placeholder="https://..." />
-                                  ) : (
-                                    <Control label="Custom ID" value={btn.customId ?? ""} onChange={(val) => {
-                                      const nextBtns = [...(block.buttons ?? [])];
-                                      nextBtns[bIdx].customId = val;
-                                      updateBlock(block.id, { buttons: nextBtns });
-                                    }} placeholder="custom_id" />
-                                  )}
-                                  <button type="button" onClick={() => {
-                                    const nextBtns = (block.buttons ?? []).filter((_, i) => i !== bIdx);
-                                    updateBlock(block.id, { buttons: nextBtns });
-                                  }} style={{ background: "none", border: "none", color: "#f23f43", cursor: "pointer", fontSize: "12px", alignSelf: "flex-end" }}>Remove Button</button>
-                                </div>
-                              ))}
-                              {(block.buttons ?? []).length < 5 && (
-                                <button type="button" onClick={() => updateBlock(block.id, { buttons: [...(block.buttons ?? []), { id: crypto.randomUUID(), label: "Button", style: "primary", customId: `btn_${Date.now()}` }] })} style={{ padding: "6px 12px", backgroundColor: "#1e1f22", color: "#fff", border: "none", borderRadius: "4px", fontSize: "12px", cursor: "pointer", alignSelf: "flex-start", fontWeight: 500 }}>+ Add Button</button>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Separator Component */}
-                          {block.type === "separator" && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                              <span style={{ fontSize: "12px", color: "#b5bac1", fontWeight: 600 }}>Separator Type</span>
-                              <select value={block.separatorStyle ?? "line"} onChange={(e) => updateBlock(block.id, { separatorStyle: e.target.value as "line" | "blank" })} style={{ width: "100%", padding: "8px 10px", backgroundColor: "#1e1f22", border: "1px solid #35363c", color: "#fff", borderRadius: "4px", fontSize: "13px" }}>
-                                <option value="line">Divider Line</option>
-                                <option value="blank">Blank Space</option>
-                              </select>
-                            </div>
-                          )}
-
-                          {/* Media Component */}
-                          {block.type === "media" && (
-                            <Control label="Media URL" value={block.mediaUrl ?? ""} onChange={(val) => updateBlock(block.id, { mediaUrl: val })} placeholder="https://..." />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <button type="button" onClick={() => removeEmbed(activeEmbed.id)} style={{ color: "#f23f43", background: "none", border: "none", cursor: "pointer", fontSize: "13px", alignSelf: "flex-start", marginTop: "10px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
-                    <Trash2 size={14} /> Delete Embed
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* DELIVERY SETTINGS TAB */}
-          {activeTab === "delivery" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px", backgroundColor: "#2b2d31", padding: "20px", borderRadius: "8px", border: "1px solid #35363c" }}>
-              <Control label="Custom Webhook Username" value={username} onChange={setUsername} placeholder="Overrides default webhook name" />
-              <Control label="Custom Webhook Avatar URL" value={avatarUrl} onChange={setAvatarUrl} placeholder="https://..." />
-              <Control label="Thread ID" value={threadId} onChange={setThreadId} placeholder="Target thread ID" />
-              
-              <div style={{ borderTop: "1px solid #35363c", paddingTop: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>FLAGS & DELIVERY SETTINGS</span>
-                <label style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", cursor: "pointer", userSelect: "none" }}>
-                  <input type="checkbox" checked={tts} onChange={(e) => setTts(e.target.checked)} />
-                  <span>Text-to-Speech (TTS)</span>
-                </label>
-                <label style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", cursor: "pointer", userSelect: "none" }}>
-                  <input type="checkbox" checked={suppressNotifications} onChange={(e) => setSuppressNotifications(e.target.checked)} />
-                  <span>Suppress Notifications (Silent Message)</span>
-                </label>
-                <label style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", cursor: "pointer", userSelect: "none" }}>
-                  <input type="checkbox" checked={useCompV2} onChange={(e) => setUseCompV2(e.target.checked)} />
-                  <span>Enable Components V2 Flag (8192)</span>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {/* EDITABLE JSON TAB */}
-          {activeTab === "json" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", backgroundColor: "#2b2d31", padding: "20px", borderRadius: "8px", border: "1px solid #35363c" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#b5bac1", letterSpacing: "0.5px" }}>JSON PAYLOAD EDITOR</span>
+              <div style={{ position: "relative" }}>
                 <button
                   type="button"
-                  onClick={handleApplyJson}
+                  onClick={() => {
+                    setIsDropdownOpen(!isDropdownOpen);
+                    setActiveSubmenu(null);
+                  }}
                   style={{
-                    padding: "6px 14px",
                     backgroundColor: "#5865f2",
                     color: "#fff",
                     border: "none",
+                    padding: "7px 14px",
                     borderRadius: "6px",
                     fontSize: "13px",
                     fontWeight: 600,
-                    cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
+                    cursor: "pointer",
                   }}
                 >
-                  <Check size={14} /> Apply JSON to Form
+                  <Plus size={15} /> Add Component <ChevronDown size={14} />
                 </button>
-              </div>
 
-              {jsonError && (
-                <div style={{ padding: "10px", backgroundColor: "rgba(242, 63, 67, 0.15)", border: "1px solid #f23f43", color: "#f23f43", borderRadius: "6px", fontSize: "13px" }}>
-                  {jsonError}
-                </div>
-              )}
+                {/* Primary Cascading Dropdown */}
+                {isDropdownOpen && (
+                  <div
+                    onMouseLeave={() => setActiveSubmenu(null)}
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 6px)",
+                      right: 0,
+                      width: "210px",
+                      backgroundColor: "#1e1f22",
+                      border: "1px solid #383a40",
+                      borderRadius: "8px",
+                      boxShadow: "0 10px 25px rgba(0,0,0,0.6)",
+                      padding: "6px",
+                      zIndex: 100,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2px",
+                    }}
+                  >
+                    {/* Category: Layout & Structure */}
+                    <div
+                      onMouseEnter={() => setActiveSubmenu("layout")}
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "8px 10px",
+                        borderRadius: "4px",
+                        color: activeSubmenu === "layout" ? "#fff" : "#dbdee1",
+                        backgroundColor: activeSubmenu === "layout" ? "#2b2d31" : "transparent",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Layout size={14} color="#949ba4" />
+                        <span>Layout & Structure</span>
+                      </div>
+                      <ChevronRight size={14} color="#949ba4" />
 
-              <textarea
-                value={jsonEditorValue}
-                onChange={(e) => setRawJsonInput(e.target.value)}
-                placeholder="Paste or edit raw Discord payload JSON here..."
-                rows={18}
-                style={{
-                  width: "100%",
-                  padding: "16px",
-                  borderRadius: "6px",
-                  border: "1px solid #35363c",
-                  backgroundColor: "#1e1f22",
-                  color: "#a6da35",
-                  fontFamily: "monospace",
-                  fontSize: "13px",
-                  lineHeight: "1.5",
-                  outline: "none",
-                  resize: "vertical",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-          )}
-
-          {/* PREVIEW TAB */}
-          {activeTab === "preview" && (
-            <div style={{ backgroundColor: "#2b2d31", padding: "24px", borderRadius: "8px", border: "1px solid #35363c" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                <h3 style={{ fontSize: "13px", color: "#b5bac1", fontWeight: 700, letterSpacing: "0.5px" }}>DISCORD LIVE PREVIEW</h3>
-                <span style={{ fontSize: "12px", color: "#23a55a", backgroundColor: "rgba(35, 165, 90, 0.1)", padding: "4px 8px", borderRadius: "4px", border: "1px solid #23a55a" }}>Realtime Render</span>
-              </div>
-
-              {/* Chat View Box */}
-              <div style={{ backgroundColor: "#313338", padding: "20px", borderRadius: "8px", maxWidth: "680px" }}>
-                {/* User Header */}
-                <div style={{ display: "flex", gap: "14px", marginBottom: "8px" }}>
-                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "#5865f2", overflow: "hidden", flexShrink: 0 }}>
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "16px" }}>W</div>
-                    )}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <span style={{ fontWeight: 600, color: "#fff", fontSize: "15px" }}>{username || "Webhook"}</span>
-                      <span style={{ backgroundColor: "#5865f2", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "1px 4px", borderRadius: "3px" }}>BOT</span>
-                      <span style={{ color: "#949ba4", fontSize: "12px", marginLeft: "4px" }}>Today at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-
-                    {/* Content Text */}
-                    {content && <div style={{ color: "#dbdee1", fontSize: "14px", marginTop: "4px", whiteSpace: "pre-wrap", lineHeight: "1.4" }}>{content}</div>}
-
-                    {/* Embed Stack Preview */}
-                    {discordEmbeds.map((embed, i) => {
-                      const draft = embeds[i];
-                      return (
+                      {/* Submenu: Layout */}
+                      {activeSubmenu === "layout" && (
                         <div
-                          key={i}
                           style={{
-                            borderLeft: draft?.hasColor ? `4px solid ${draft?.color}` : "none",
-                            backgroundColor: "#2b2d31",
-                            padding: "16px",
-                            borderRadius: "4px",
-                            marginTop: "8px",
+                            position: "absolute",
+                            top: "-6px",
+                            left: "100%",
+                            marginLeft: "4px",
+                            width: "190px",
+                            backgroundColor: "#1e1f22",
+                            border: "1px solid #383a40",
+                            borderRadius: "8px",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.6)",
+                            padding: "6px",
+                            zIndex: 101,
                             display: "flex",
                             flexDirection: "column",
-                            gap: "8px",
-                            maxWidth: "520px",
+                            gap: "2px",
                           }}
                         >
-                          {/* Author */}
-                          {embed.author?.name && (
-                            <div style={{ color: "#fff", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
-                              {embed.author.icon_url && (
-                                <img src={embed.author.icon_url} alt="" style={{ width: "20px", height: "20px", borderRadius: "50%" }} />
-                              )}
-                              <span>{embed.author.name}</span>
-                            </div>
-                          )}
+                          {layoutItems.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                disabled={item.disabled}
+                                onClick={() => addComponent(item.id)}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  padding: "8px 10px",
+                                  backgroundColor: "transparent",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  color: item.disabled ? "#4e5058" : "#dbdee1",
+                                  fontSize: "13px",
+                                  cursor: item.disabled ? "not-allowed" : "pointer",
+                                  textAlign: "left",
+                                  width: "100%",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!item.disabled) e.currentTarget.style.backgroundColor = "#2b2d31";
+                                }}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                              >
+                                <Icon size={14} color={item.disabled ? "#4e5058" : "#949ba4"} />
+                                <span>{item.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
 
-                          {/* Title & Thumbnail Layout */}
-                          <div style={{ display: "flex", justifyContent: "space-between", gap: "16px" }}>
-                            <div style={{ flex: 1 }}>
-                              {embed.title && (
-                                <div style={{ color: "#fff", fontWeight: 700, fontSize: "15px", marginBottom: "4px" }}>
-                                  {embed.url ? <a href={embed.url} target="_blank" rel="noreferrer" style={{ color: "#00a8fc", textDecoration: "none" }}>{embed.title}</a> : embed.title}
-                                </div>
-                              )}
-                              {embed.description && (
-                                <div style={{ color: "#dbdee1", fontSize: "13px", whiteSpace: "pre-wrap", lineHeight: "1.35" }}>{embed.description}</div>
-                              )}
-                            </div>
-                            {embed.thumbnail?.url && (
-                              <img src={embed.thumbnail.url} alt="" style={{ width: "80px", height: "80px", borderRadius: "4px", objectFit: "cover" }} />
+                    {/* Category: Content Blocks */}
+                    <div
+                      onMouseEnter={() => setActiveSubmenu("content")}
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "8px 10px",
+                        borderRadius: "4px",
+                        color: activeSubmenu === "content" ? "#fff" : "#dbdee1",
+                        backgroundColor: activeSubmenu === "content" ? "#2b2d31" : "transparent",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Type size={14} color="#949ba4" />
+                        <span>Content & Inputs</span>
+                      </div>
+                      <ChevronRight size={14} color="#949ba4" />
+
+                      {/* Submenu: Content */}
+                      {activeSubmenu === "content" && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "-6px",
+                            left: "100%",
+                            marginLeft: "4px",
+                            width: "180px",
+                            backgroundColor: "#1e1f22",
+                            border: "1px solid #383a40",
+                            borderRadius: "8px",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.6)",
+                            padding: "6px",
+                            zIndex: 101,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "2px",
+                          }}
+                        >
+                          {contentItems.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                disabled={item.disabled}
+                                onClick={() => addComponent(item.id)}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  padding: "8px 10px",
+                                  backgroundColor: "transparent",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  color: item.disabled ? "#4e5058" : "#dbdee1",
+                                  fontSize: "13px",
+                                  cursor: item.disabled ? "not-allowed" : "pointer",
+                                  textAlign: "left",
+                                  width: "100%",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!item.disabled) e.currentTarget.style.backgroundColor = "#2b2d31";
+                                }}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                              >
+                                <Icon size={14} color={item.disabled ? "#4e5058" : "#949ba4"} />
+                                <span>{item.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Category: Media Options */}
+                    <div
+                      onMouseEnter={() => setActiveSubmenu("media")}
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "8px 10px",
+                        borderRadius: "4px",
+                        color: activeSubmenu === "media" ? "#fff" : "#dbdee1",
+                        backgroundColor: activeSubmenu === "media" ? "#2b2d31" : "transparent",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <ImageIcon size={14} color="#949ba4" />
+                        <span>Media & Attachments</span>
+                      </div>
+                      <ChevronRight size={14} color="#949ba4" />
+
+                      {/* Submenu: Media */}
+                      {activeSubmenu === "media" && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "-6px",
+                            left: "100%",
+                            marginLeft: "4px",
+                            width: "180px",
+                            backgroundColor: "#1e1f22",
+                            border: "1px solid #383a40",
+                            borderRadius: "8px",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.6)",
+                            padding: "6px",
+                            zIndex: 101,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "2px",
+                          }}
+                        >
+                          {mediaItems.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => addComponent(item.id)}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  padding: "8px 10px",
+                                  backgroundColor: "transparent",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  color: "#dbdee1",
+                                  fontSize: "13px",
+                                  cursor: "pointer",
+                                  textAlign: "left",
+                                  width: "100%",
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#2b2d31")}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                              >
+                                <Icon size={14} color="#949ba4" />
+                                <span>{item.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Category: Active Container Fields (Dynamic) */}
+                    {hasEmbed && (
+                      <div
+                        onMouseEnter={() => setActiveSubmenu("container_fields")}
+                        style={{
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "8px 10px",
+                          borderRadius: "4px",
+                          color: activeSubmenu === "container_fields" ? "#fff" : "#dbdee1",
+                          backgroundColor: activeSubmenu === "container_fields" ? "#2b2d31" : "transparent",
+                          fontSize: "13px",
+                          cursor: "pointer",
+                          borderTop: "1px solid #2b2d31",
+                          marginTop: "2px",
+                          paddingTop: "10px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <FolderPlus size={14} color="#5865f2" />
+                          <span>Container Fields</span>
+                        </div>
+                        <ChevronRight size={14} color="#949ba4" />
+
+                        {/* Submenu: Container Fields */}
+                        {activeSubmenu === "container_fields" && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "-6px",
+                              left: "100%",
+                              marginLeft: "4px",
+                              width: "190px",
+                              backgroundColor: "#1e1f22",
+                              border: "1px solid #383a40",
+                              borderRadius: "8px",
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.6)",
+                              padding: "6px",
+                              zIndex: 101,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "2px",
+                            }}
+                          >
+                            {activeEmbedFields.length > 0 ? (
+                              activeEmbedFields.map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                  <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => addComponent(item.id)}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      padding: "8px 10px",
+                                      backgroundColor: "transparent",
+                                      border: "none",
+                                      borderRadius: "4px",
+                                      color: "#dbdee1",
+                                      fontSize: "13px",
+                                      cursor: "pointer",
+                                      textAlign: "left",
+                                      width: "100%",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#2b2d31")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                  >
+                                    <Icon size={14} color="#949ba4" />
+                                    <span>{item.label}</span>
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div style={{ padding: "8px", fontSize: "11px", color: "#949ba4", textAlign: "center" }}>
+                                All container elements added
+                              </div>
                             )}
                           </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
 
-                          {/* Render Components V2 Canvas Blocks */}
-                          {draft?.mode === "cv2" && draft?.blocks.map((block) => {
-                            if (block.type === "text" && block.content) {
-                              return <div key={block.id} style={{ color: "#dbdee1", fontSize: "13px" }}>{block.content}</div>;
-                            }
+            {/* Live Canvas Viewport */}
+            <div style={{ backgroundColor: "#2b2d31", borderRadius: "8px", border: "1px solid #383a40", padding: "20px", minHeight: "260px" }}>
+              
+              {/* Bot Meta & Primary Message Body */}
+              <div style={{ display: "flex", gap: "14px", marginBottom: "16px" }}>
+                <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "#5865f2", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>
+                  {avatarUrl.trim() ? (
+                    <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    username ? username.slice(0, 1).toUpperCase() : "B"
+                  )}
+                </div>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ color: "#fff", fontWeight: 600, fontSize: "15px" }}>{username || "Webhook Bot"}</span>
+                    <span style={{ backgroundColor: "#5865f2", color: "#fff", fontSize: "10px", padding: "1px 4px", borderRadius: "3px", fontWeight: 700 }}>APP</span>
+                  </div>
 
-                            if (block.type === "separator") {
-                              return block.separatorStyle === "line" ? (
-                                <div key={block.id} style={{ borderTop: "1px solid #35363c", margin: "6px 0" }} />
-                              ) : (
-                                <div key={block.id} style={{ height: "12px" }} />
-                              );
-                            }
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Type plain message body here..."
+                    rows={2}
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#1e1f22",
+                      border: "1px solid #383a40",
+                      borderRadius: "6px",
+                      color: "#dbdee1",
+                      padding: "10px",
+                      fontSize: "14px",
+                      outline: "none",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              </div>
 
-                            if (block.type === "action_row" && block.buttons?.length) {
-                              return (
-                                <div key={block.id} style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "4px" }}>
-                                  {block.buttons.map((btn) => (
-                                    <DiscordButtonPreview key={btn.id} btn={btn} />
-                                  ))}
-                                </div>
-                              );
-                            }
+              {/* Message Canvas Layout Body */}
+              <div style={{ marginLeft: "54px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                
+                {/* Additional Text Display Blocks */}
+                {textDisplays.map((td) => (
+                  <div key={td.id} style={{ backgroundColor: "#1e1f22", borderRadius: "6px", padding: "10px 12px", border: "1px solid #2b2d31", display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                    <Type size={16} color="#949ba4" style={{ marginTop: "4px" }} />
+                    <textarea
+                      value={td.text}
+                      onChange={(e) => setTextDisplays((prev) => prev.map((item) => (item.id === td.id ? { ...item, text: e.target.value } : item)))}
+                      rows={2}
+                      style={{ flex: 1, background: "transparent", border: "none", color: "#dbdee1", fontSize: "13px", outline: "none", resize: "vertical" }}
+                    />
+                    <DismissButton onClick={() => setTextDisplays((prev) => prev.filter((item) => item.id !== td.id))} title="Remove Text Display" />
+                  </div>
+                ))}
 
-                            if (block.type === "media" && block.mediaUrl) {
-                              return (
-                                <img key={block.id} src={block.mediaUrl} alt="" style={{ width: "100%", borderRadius: "4px", marginTop: "4px" }} />
-                              );
-                            }
+                {/* Separator Line */}
+                {hasSeparator && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
+                    <div style={{ flex: 1, height: "1px", backgroundColor: "#3f4147" }} />
+                    <span style={{ fontSize: "10px", color: "#949ba4", fontWeight: 700 }}>SEPARATOR</span>
+                    <div style={{ flex: 1, height: "1px", backgroundColor: "#3f4147" }} />
+                    <DismissButton onClick={() => setHasSeparator(false)} title="Remove Separator" />
+                  </div>
+                )}
 
-                            return null;
-                          })}
+                {/* Media Gallery Component */}
+                {mediaGallery.length > 0 && (
+                  <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", padding: "12px", border: "1px solid #2b2d31", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Grid size={14} /> MEDIA GALLERY ({mediaGallery.length}/4)
+                      </span>
+                      <DismissButton onClick={() => setMediaGallery([])} title="Clear Media Gallery" />
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px" }}>
+                      {mediaGallery.map((mg) => (
+                        <div key={mg.id} style={{ backgroundColor: "#2b2d31", padding: "8px", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
+                          <input
+                            value={mg.url}
+                            onChange={(e) => setMediaGallery((prev) => prev.map((item) => (item.id === mg.id ? { ...item, url: e.target.value } : item)))}
+                            placeholder="Image URL..."
+                            style={{ backgroundColor: "#1e1f22", border: "1px solid #383a40", borderRadius: "4px", color: "#fff", fontSize: "11px", padding: "4px 8px", outline: "none" }}
+                          />
+                          {mg.url.trim() && (
+                            <img src={mg.url} alt="Gallery item" style={{ width: "100%", height: "80px", objectFit: "cover", borderRadius: "4px" }} />
+                          )}
+                          <div style={{ position: "absolute", top: "4px", right: "4px" }}>
+                            <DismissButton onClick={() => setMediaGallery((prev) => prev.filter((item) => item.id !== mg.id))} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                          {/* Fields */}
-                          {embed.fields && embed.fields.length > 0 && (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "8px" }}>
-                              {embed.fields.map((f, fIdx) => (
-                                <div key={fIdx} style={{ flex: f.inline ? "0 0 calc(33.33% - 12px)" : "1 0 100%", fontSize: "13px" }}>
-                                  <div style={{ color: "#b5bac1", fontWeight: 600, marginBottom: "2px" }}>{f.name}</div>
-                                  <div style={{ color: "#dbdee1" }}>{f.value}</div>
-                                </div>
-                              ))}
-                            </div>
+                {/* Attached Files Component */}
+                {attachedFiles.length > 0 && (
+                  <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", padding: "12px", border: "1px solid #2b2d31", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Paperclip size={14} /> ATTACHED FILES
+                    </span>
+                    {attachedFiles.map((f) => (
+                      <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "8px", backgroundColor: "#2b2d31", padding: "6px 10px", borderRadius: "6px" }}>
+                        <input
+                          value={f.fileName}
+                          onChange={(e) => setAttachedFiles((prev) => prev.map((item) => (item.id === f.id ? { ...item, fileName: e.target.value } : item)))}
+                          placeholder="filename.pdf"
+                          style={{ backgroundColor: "#1e1f22", border: "none", color: "#fff", borderRadius: "4px", padding: "4px 8px", fontSize: "12px", outline: "none", width: "120px" }}
+                        />
+                        <input
+                          value={f.url}
+                          onChange={(e) => setAttachedFiles((prev) => prev.map((item) => (item.id === f.id ? { ...item, url: e.target.value } : item)))}
+                          placeholder="https://attachment-url.com/file"
+                          style={{ backgroundColor: "#1e1f22", border: "none", color: "#949ba4", borderRadius: "4px", padding: "4px 8px", fontSize: "12px", outline: "none", flex: 1 }}
+                        />
+                        <DismissButton onClick={() => setAttachedFiles((prev) => prev.filter((item) => item.id !== f.id))} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Embed Cards List */}
+                {embeds.map((embed, index) => {
+                  const isSelected = embed.id === activeEmbedId;
+                  return (
+                    <div
+                      key={embed.id}
+                      onClick={() => setActiveEmbedId(embed.id)}
+                      style={{
+                        borderLeft: embed.color ? `4px solid ${embed.color}` : "4px solid transparent",
+                        backgroundColor: "#1e1f22",
+                        padding: "16px",
+                        borderRadius: "0 8px 8px 0",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px",
+                        borderTop: "1px solid #2b2d31",
+                        borderRight: "1px solid #2b2d31",
+                        borderBottom: "1px solid #2b2d31",
+                        cursor: "pointer",
+                        position: "relative",
+                      }}
+                    >
+                      {/* Active State Badge */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          {isSelected ? (
+                            <span style={{ backgroundColor: "#2b2d31", color: "#5865f2", fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", border: "1px solid #5865f2" }}>
+                              Active Container #{index + 1}
+                            </span>
+                          ) : (
+                            <span style={{ color: "#949ba4", fontSize: "11px", fontWeight: 600 }}>
+                              Container #{index + 1}
+                            </span>
                           )}
 
-                          {/* Large Banner Image */}
-                          {embed.image?.url && (
-                            <img src={embed.image.url} alt="" style={{ maxWidth: "100%", borderRadius: "4px", marginTop: "8px" }} />
-                          )}
-
-                          {/* Footer & Timestamp */}
-                          {(embed.footer?.text || draft?.timestamp) && (
-                            <div style={{ color: "#949ba4", fontSize: "11px", marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-                              {embed.footer?.icon_url && (
-                                <img src={embed.footer.icon_url} alt="" style={{ width: "16px", height: "16px", borderRadius: "50%" }} />
-                              )}
-                              <span>
-                                {embed.footer?.text}
-                                {embed.footer?.text && draft?.timestamp ? " • " : ""}
-                                {draft?.timestamp ? new Date(draft.timestamp).toLocaleString() : ""}
-                              </span>
+                          {embed.color !== undefined && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: 700 }}>COLOR:</span>
+                              <input
+                                type="color"
+                                value={embed.color}
+                                onChange={(e) => updateActiveEmbed({ color: e.target.value })}
+                                style={{ background: "none", border: "none", width: "22px", height: "22px", cursor: "pointer" }}
+                              />
+                              <DismissButton
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateActiveEmbed({ color: undefined });
+                                }}
+                                title="Remove Color"
+                              />
                             </div>
                           )}
                         </div>
-                      );
-                    })}
+
+                        <DismissButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const next = embeds.filter((e) => e.id !== embed.id);
+                            setEmbeds(next);
+                            setActiveEmbedId(next[0]?.id || null);
+                          }}
+                          title="Delete Container"
+                        />
+                      </div>
+
+                      {/* Author Header */}
+                      {embed.authorName !== undefined && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            {embed.authorIconUrl ? (
+                              <img src={embed.authorIconUrl} alt="" style={{ width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover" }} />
+                            ) : null}
+                            <input
+                              value={embed.authorName}
+                              onChange={(e) => updateActiveEmbed({ authorName: e.target.value })}
+                              placeholder="Author Name..."
+                              style={{ background: "transparent", border: "none", color: "#b5bac1", fontSize: "12px", fontWeight: 600, outline: "none", flex: 1 }}
+                            />
+                            <DismissButton
+                              onClick={() => updateActiveEmbed({ authorName: undefined, authorIconUrl: undefined, authorUrl: undefined })}
+                              title="Remove Author"
+                            />
+                          </div>
+                          <input
+                            value={embed.authorUrl || ""}
+                            onChange={(e) => updateActiveEmbed({ authorUrl: e.target.value })}
+                            placeholder="Author Link URL (optional)..."
+                            style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "4px", color: "#949ba4", fontSize: "11px", padding: "4px 8px", outline: "none" }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Title & Description Grid */}
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "flex-start" }}>
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {embed.title !== undefined && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <input
+                                  value={embed.title}
+                                  onChange={(e) => updateActiveEmbed({ title: e.target.value })}
+                                  placeholder="Embed Title..."
+                                  style={{ background: "transparent", border: "none", color: "#fff", fontSize: "16px", fontWeight: 700, outline: "none", flex: 1 }}
+                                />
+                                <DismissButton
+                                  onClick={() => updateActiveEmbed({ title: undefined, titleUrl: undefined })}
+                                  title="Remove Title"
+                                />
+                              </div>
+                              <input
+                                value={embed.titleUrl || ""}
+                                onChange={(e) => updateActiveEmbed({ titleUrl: e.target.value })}
+                                placeholder="Title Link URL (optional)..."
+                                style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "4px", color: "#949ba4", fontSize: "11px", padding: "4px 8px", outline: "none" }}
+                              />
+                            </div>
+                          )}
+
+                          {embed.description !== undefined && (
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                              <textarea
+                                value={embed.description}
+                                onChange={(e) => updateActiveEmbed({ description: e.target.value })}
+                                placeholder="Embed description text..."
+                                rows={2}
+                                style={{ background: "transparent", border: "none", color: "#dbdee1", fontSize: "13px", outline: "none", resize: "vertical", width: "100%" }}
+                              />
+                              <DismissButton
+                                onClick={() => updateActiveEmbed({ description: undefined })}
+                                title="Remove Description"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Thumbnail Image */}
+                        {embed.thumbnailUrl !== undefined && (
+                          <div style={{ position: "relative" }}>
+                            {embed.thumbnailUrl.trim() ? (
+                              <div style={{ position: "relative", width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden", border: "1px solid #383a40" }}>
+                                <img src={embed.thumbnailUrl} alt="Thumbnail" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                <div style={{ position: "absolute", top: "2px", right: "2px" }}>
+                                  <DismissButton onClick={() => updateActiveEmbed({ thumbnailUrl: undefined })} />
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ width: "80px", height: "80px", border: "1px dashed #3f4147", borderRadius: "6px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4px", backgroundColor: "#2b2d31", position: "relative" }}>
+                                <ImageIcon size={16} color="#949ba4" />
+                                <input
+                                  value={embed.thumbnailUrl}
+                                  onChange={(e) => updateActiveEmbed({ thumbnailUrl: e.target.value })}
+                                  placeholder="Paste URL..."
+                                  style={{ width: "90%", backgroundColor: "#1e1f22", border: "none", color: "#fff", fontSize: "9px", borderRadius: "3px", padding: "2px 4px", marginTop: "4px", outline: "none", textAlign: "center" }}
+                                />
+                                <div style={{ position: "absolute", top: "2px", right: "2px" }}>
+                                  <DismissButton onClick={() => updateActiveEmbed({ thumbnailUrl: undefined })} />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Fields */}
+                      {embed.fields.length > 0 && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "4px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px" }}>
+                            {embed.fields.map((field) => (
+                              <div key={field.id} style={{ backgroundColor: "#2b2d31", padding: "10px", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                  <input
+                                    value={field.name}
+                                    onChange={(e) =>
+                                      updateActiveEmbed({
+                                        fields: embed.fields.map((f) => (f.id === field.id ? { ...f, name: e.target.value } : f)),
+                                      })
+                                    }
+                                    placeholder="Field Name"
+                                    style={{ background: "transparent", border: "none", color: "#fff", fontSize: "12px", fontWeight: 700, outline: "none", width: "70%" }}
+                                  />
+                                  <select
+                                    value={field.inline ? "inline" : "stacked"}
+                                    onChange={(e) =>
+                                      updateActiveEmbed({
+                                        fields: embed.fields.map((f) => (f.id === field.id ? { ...f, inline: e.target.value === "inline" } : f)),
+                                      })
+                                    }
+                                    style={{ backgroundColor: "#1e1f22", border: "none", color: "#949ba4", borderRadius: "4px", fontSize: "10px", padding: "2px 4px", outline: "none" }}
+                                  >
+                                    <option value="inline">Inline</option>
+                                    <option value="stacked">Stacked</option>
+                                  </select>
+                                </div>
+
+                                <input
+                                  value={field.value}
+                                  onChange={(e) =>
+                                    updateActiveEmbed({
+                                      fields: embed.fields.map((f) => (f.id === field.id ? { ...f, value: e.target.value } : f)),
+                                    })
+                                  }
+                                  placeholder="Field Value"
+                                  style={{ background: "transparent", border: "none", color: "#dbdee1", fontSize: "12px", outline: "none" }}
+                                />
+
+                                <div style={{ position: "absolute", bottom: "6px", right: "6px" }}>
+                                  <DismissButton
+                                    onClick={() =>
+                                      updateActiveEmbed({
+                                        fields: embed.fields.filter((f) => f.id !== field.id),
+                                      })
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Banner Image */}
+                      {embed.imageUrl !== undefined && (
+                        <div style={{ position: "relative", width: "100%", marginTop: "4px" }}>
+                          {embed.imageUrl.trim() ? (
+                            <div style={{ position: "relative", width: "100%", maxHeight: "200px", borderRadius: "6px", overflow: "hidden", border: "1px solid #383a40" }}>
+                              <img src={embed.imageUrl} alt="Banner" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              <div style={{ position: "absolute", top: "6px", right: "6px" }}>
+                                <DismissButton onClick={() => updateActiveEmbed({ imageUrl: undefined })} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ width: "100%", height: "90px", border: "1px dashed #3f4147", borderRadius: "6px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", backgroundColor: "#2b2d31", position: "relative" }}>
+                              <ImageIcon size={20} color="#949ba4" />
+                              <input
+                                value={embed.imageUrl}
+                                onChange={(e) => updateActiveEmbed({ imageUrl: e.target.value })}
+                                placeholder="Paste Banner Image URL..."
+                                style={{ width: "70%", backgroundColor: "#1e1f22", border: "1px solid #383a40", color: "#fff", fontSize: "11px", borderRadius: "4px", padding: "4px 8px", outline: "none", textAlign: "center" }}
+                              />
+                              <div style={{ position: "absolute", top: "6px", right: "6px" }}>
+                                <DismissButton onClick={() => updateActiveEmbed({ imageUrl: undefined })} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Footer & Timestamp */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginTop: "4px" }}>
+                        {embed.footerText !== undefined && (
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+                            {embed.footerIconUrl ? (
+                              <img src={embed.footerIconUrl} alt="" style={{ width: "16px", height: "16px", borderRadius: "50%", objectFit: "cover" }} />
+                            ) : null}
+                            <input
+                              value={embed.footerText}
+                              onChange={(e) => updateActiveEmbed({ footerText: e.target.value })}
+                              placeholder="Footer note..."
+                              style={{ background: "transparent", border: "none", color: "#949ba4", fontSize: "11px", outline: "none", flex: 1 }}
+                            />
+                            <DismissButton
+                              onClick={() => updateActiveEmbed({ footerText: undefined, footerIconUrl: undefined })}
+                              title="Remove Footer"
+                            />
+                          </div>
+                        )}
+
+                        {embed.timestamp !== undefined && (
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <Clock size={12} color="#949ba4" />
+                            <span style={{ fontSize: "10px", color: "#949ba4" }}>{new Date(embed.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <DismissButton
+                              onClick={() => updateActiveEmbed({ timestamp: undefined })}
+                              title="Remove Timestamp"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Link Buttons Action Row */}
+                {linkButtons.length > 0 && (
+                  <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", padding: "14px", border: "1px solid #2b2d31", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: 700 }}>ACTION ROW — BUTTON ROW</span>
+                      <DismissButton onClick={() => setLinkButtons([])} title="Clear Buttons" />
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                      {linkButtons.map((btn) => (
+                        <div key={btn.id} style={{ backgroundColor: "#2b2d31", border: "1px solid #383a40", borderRadius: "6px", padding: "8px 12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                          <ExternalLink size={14} color="#949ba4" />
+                          <input
+                            value={btn.label}
+                            onChange={(e) => setLinkButtons((prev) => prev.map((b) => (b.id === btn.id ? { ...b, label: e.target.value } : b)))}
+                            placeholder="Button Label"
+                            style={{ backgroundColor: "#1e1f22", border: "none", color: "#fff", borderRadius: "4px", padding: "3px 6px", fontSize: "12px", outline: "none", width: "90px" }}
+                          />
+                          <input
+                            value={btn.url}
+                            onChange={(e) => setLinkButtons((prev) => prev.map((b) => (b.id === btn.id ? { ...b, url: e.target.value } : b)))}
+                            placeholder="https://..."
+                            style={{ backgroundColor: "#1e1f22", border: "none", color: "#949ba4", borderRadius: "4px", padding: "3px 6px", fontSize: "12px", outline: "none", width: "130px" }}
+                          />
+                          <DismissButton onClick={() => setLinkButtons((prev) => prev.filter((b) => b.id !== btn.id))} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
-          )}
-        </div>
-      </form>
-    </main>
+          </div>
+        )}
+
+        {/* TAB 2: BOT PROFILE & SIGNALS */}
+        {tab === "bot_settings" && (
+          <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", border: "1px solid #2b2d31", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <h2 style={{ fontSize: "15px", color: "#fff", margin: 0, fontWeight: 700 }}>Bot Profile & Message Signals</h2>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>OVERRIDE USERNAME</span>
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Webhook Bot"
+                  style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
+                />
+              </label>
+
+              <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>AVATAR URL</span>
+                <input
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/avatar.png"
+                  style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
+                />
+              </label>
+            </div>
+
+            <div style={{ borderTop: "1px solid #2b2d31", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>FORUM & THREAD CREATION OPTIONS</span>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <span style={{ fontSize: "11px", color: "#949ba4" }}>NEW THREAD / FORUM TITLE (thread_name)</span>
+                  <input
+                    value={threadName}
+                    onChange={(e) => setThreadName(e.target.value)}
+                    placeholder="Thread title when posting in Forum Channel"
+                    style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
+                  />
+                </label>
+
+                <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <span style={{ fontSize: "11px", color: "#949ba4" }}>FORUM TAG IDs (comma separated)</span>
+                  <input
+                    value={appliedTags}
+                    onChange={(e) => setAppliedTags(e.target.value)}
+                    placeholder="102123..., 102124..."
+                    style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div style={{ borderTop: "1px solid #2b2d31", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>MESSAGE FLAGS & MODERATION</span>
+
+              <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={suppressNotifications}
+                  onChange={(e) => setSuppressNotifications(e.target.checked)}
+                  style={{ width: "16px", height: "16px", accentColor: "#5865f2" }}
+                />
+                <span style={{ fontSize: "13px", color: "#dbdee1" }}>Silent Ping (Suppress desktop & mobile push notifications)</span>
+              </label>
+
+              <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={suppressEmbeds}
+                  onChange={(e) => setSuppressEmbeds(e.target.checked)}
+                  style={{ width: "16px", height: "16px", accentColor: "#5865f2" }}
+                />
+                <span style={{ fontSize: "13px", color: "#dbdee1" }}>Suppress Link Previews (Hide URL preview embeds)</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: DEPLOY & DISPATCH */}
+        {tab === "dispatch" && (
+          <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", border: "1px solid #2b2d31", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <h2 style={{ fontSize: "15px", color: "#fff", margin: 0, fontWeight: 700 }}>Target Destination</h2>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>DISCORD WEBHOOK URL *</span>
+              <input
+                type="password"
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                placeholder="https://discord.com/api/webhooks/..."
+                style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
+              />
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>TARGET THREAD ID (OPTIONAL)</span>
+              <input
+                value={threadId}
+                onChange={(e) => setThreadId(e.target.value)}
+                placeholder="Target an existing thread channel ID"
+                style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
+              />
+            </label>
+          </div>
+        )}
+
+        {/* TAB 4: RAW JSON VIEW */}
+        {tab === "json" && (
+          <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", border: "1px solid #2b2d31", padding: "18px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+              <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: 700 }}>PAYLOAD JSON</span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(jsonString);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                style={{ backgroundColor: "#2b2d31", border: "none", color: "#fff", padding: "5px 10px", borderRadius: "4px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                {copied ? <Check size={13} /> : <Copy size={13} />}
+                {copied ? "Copied" : "Copy Payload"}
+              </button>
+            </div>
+            <pre style={{ margin: 0, fontSize: "13px", color: "#569cd6", fontFamily: "monospace", overflowX: "auto" }}>{jsonString}</pre>
+          </div>
+        )}
+
+        {/* Status Notification Banner */}
+        {sendResult && (
+          <div
+            style={{
+              backgroundColor: sendResult.kind === "success" ? "rgba(35, 165, 90, 0.15)" : "rgba(242, 63, 67, 0.15)",
+              border: `1px solid ${sendResult.kind === "success" ? "#23a55a" : "#f23f43"}`,
+              borderRadius: "6px",
+              padding: "10px 14px",
+              color: "#fff",
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <AlertCircle size={15} color={sendResult.kind === "success" ? "#23a55a" : "#f23f43"} />
+            {sendResult.message}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
