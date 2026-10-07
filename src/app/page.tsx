@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -78,6 +78,13 @@ const tools = [
     href: '/gradient-finder',
     icon: Palette,
     iconClass: 'palette'
+  },
+  {
+    title: 'Markdown Cheatsheet',
+    description: 'Quick reference for Discord markdown formatting.',
+    href: '/markdown-cheatsheet',
+    icon: PencilLine,
+    iconClass: 'pencil-line'
   }
 ];
 
