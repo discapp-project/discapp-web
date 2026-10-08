@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -85,7 +85,29 @@ const tools = [
     href: '/markdown-cheatsheet',
     icon: PencilLine,
     iconClass: 'pencil-line'
-  }
+  },
+  {
+    title: 'Asset Compressor',
+    description: 'Compress stickers and emojis.',
+    href: '/asset-compressor',
+    icon: ArrowDownWideNarrow,
+    iconClass: 'arrow-down-wide-narrow'
+  },
+  {
+    title: 'Soundboard Studio',
+    description: 'Create and edit soundboard clips for your server.',
+    href: '/soundboard-studio',
+    icon: FileMusic,
+    iconClass: 'file-music'
+  },
+  {
+    title: 'Asset Resizer',
+    description: 'Resize assets for a server or profile.',
+    href: '/asset-resizer',
+    icon: Scaling,
+    iconClass: 'scaling'
+  },
+  
 ];
 
 export default function Home() {
