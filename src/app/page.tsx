@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling, Calculator, CalendarDays, TypeOutline } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -106,6 +106,27 @@ const tools = [
     href: '/asset-resizer',
     icon: Scaling,
     iconClass: 'scaling'
+  },
+  {
+    title: 'Permission Calculator',
+    description: 'Easily setup permissions for your applications.',
+    href: '/permission-calculator',
+    icon: Calculator,
+    iconClass: 'calculator'
+  },
+  {
+    title: 'Timestamp Generator',
+    description: 'Generate Discord-compatible timestamps for messages and events.',
+    href: '/timestamp-generator',
+    icon: CalendarDays,
+    iconClass: 'CalendarDays'
+  },
+  {
+    title: 'Font Generator',
+    description: 'Get custom fonts for your Discord display names.',
+    href: '/font-generator',
+    icon: TypeOutline,
+    iconClass: 'type-outline'
   },
   
 ];
