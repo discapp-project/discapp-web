@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling, Calculator, CalendarDays, TypeOutline, Space, KeyRound, BrickWallShield, Regex, Puzzle } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling, Calculator, CalendarDays, TypeOutline, Space, KeyRound, BrickWallShield, Regex, Puzzle, Braces, Baseline } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -163,6 +163,20 @@ const tools = [
     icon: Puzzle,
     iconClass: 'puzzle'
   },
+  {
+    title: 'JSON Formatter',
+    description: 'Fix and format webhook JSON payloads.',
+    href: '/webhook-json-formatter',
+    icon: Braces,
+    iconClass: 'braces'
+  },
+  {
+    title: 'ANSI Builder',
+    description: 'Design custom Discord ANSI-colored code blocks for Discord.',
+    href: '/ansi-builder',
+    icon: Baseline,
+    iconClass: 'baseline'
+  }
 ];
 
 export default function Home() {
