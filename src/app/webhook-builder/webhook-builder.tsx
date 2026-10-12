@@ -845,7 +845,7 @@ export default function DiscordStudioWorkspace() {
               cursor: "pointer",
             }}
           >
-            {isSending ? "Dispatching..." : "Dispatch Payload"}
+            {isSending ? "Dispatching..." : "Send Webhook"}
           </button>
         </div>
 
@@ -855,7 +855,7 @@ export default function DiscordStudioWorkspace() {
             <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid #2b2d31", position: "relative", zIndex: 50 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Sliders size={16} color="#949ba4" />
-                <span style={{ fontSize: "12px", color: "#949ba4", fontWeight: 700, letterSpacing: "0.5px" }}>COMPONENT INJECTOR</span>
+                <span style={{ fontSize: "12px", color: "#949ba4", fontWeight: 700, letterSpacing: "0.5px" }}>Components Options</span>
               </div>
 
               <div style={{ position: "relative" }}>
