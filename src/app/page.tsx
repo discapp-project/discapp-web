@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling, Calculator, CalendarDays, TypeOutline, Space } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling, Calculator, CalendarDays, TypeOutline, Space, KeyRound, BrickWallShield } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -134,6 +134,20 @@ const tools = [
     href: '/space-generator',
     icon: Space,
     iconClass: 'space'
+  },
+  {
+    title: 'Automod Permission Decoder',
+    description: 'Decode and understand automod permissions for your server.',
+    href: '/automod-permission-decoder',
+    icon: KeyRound,
+    iconClass: 'key-round'
+  },
+  {
+    title: 'Automod Tester',
+    description: 'Test automod regexes and keywords before implementation.',
+    href: '/automod-tester',
+    icon: BrickWallShield,
+    iconClass: 'brick-wall-shield'
   },
   
 ];
