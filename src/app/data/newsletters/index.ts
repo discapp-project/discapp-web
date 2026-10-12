@@ -10,12 +10,12 @@ export interface NewsletterMeta {
 
 export const newsletterIndex: NewsletterMeta[] = [
   {
-    slug: 'welcome-to-botless',
-    title: 'Welcome to Botless News & Platform Updates',
+    slug: 'welcome-to-discapp',
+    title: 'Welcome to Discapp News & Platform Updates',
     date: '2026-10-04',
-    author: 'Botless Team',
+    author: 'Discapp Team',
     category: 'Announcement',
     summary: 'First official announcement! Welcome and introductions <3',
-    image: '/botless-banner.png'
+    image: '/discapp-banner.png'
   },
 ];

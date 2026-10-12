@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import WebhookBuilder from "./webhook-builder";
 
 export const metadata: Metadata = {
-  title: "Webhook Builder | Botless",
+  title: "Webhook Builder | Discapp",
   description: "Compose, preview, and send custom Discord webhook messages.",
 };
 

@@ -8,7 +8,7 @@ export default function RichPresenceBuilder() {
 
   // Client Application ID and Library Selection
   const [clientId, setClientId] = useState<string>("YOUR_CLIENT_ID");
-  const [appName, setAppName] = useState<string>("Botless Utility Suite");
+  const [appName, setAppName] = useState<string>("Discapp Utility Suite");
   const [libChoice, setLibChoice] = useState<"discord-rpc" | "discord-api-types" | "discord.py">("discord-rpc");
 
   // Feature optional toggles
@@ -20,10 +20,10 @@ export default function RichPresenceBuilder() {
   const [showButtons, setShowButtons] = useState<boolean>(false);
 
   // Field values
-  const [details, setDetails] = useState<string>("Exploring Botless Hub");
+  const [details, setDetails] = useState<string>("Exploring Discapp Hub");
   const [state, setState] = useState<string>("In Developer Mode");
-  const [largeImageKey, setLargeImageKey] = useState<string>("botless_logo");
-  const [largeImageText, setLargeImageText] = useState<string>("Botless v1.0");
+  const [largeImageKey, setLargeImageKey] = useState<string>("discapp_logo");
+  const [largeImageText, setLargeImageText] = useState<string>("Discapp v1.0");
   const [smallImageKey, setSmallImageKey] = useState<string>("verified_badge");
   const [smallImageText, setSmallImageText] = useState<string>("Verified Developer");
   
@@ -330,7 +330,7 @@ while True:
                       type="text"
                       value={details}
                       onChange={(e) => setDetails(e.target.value)}
-                      placeholder="e.g. Exploring Botless Hub"
+                      placeholder="e.g. Exploring Discapp Hub"
                       style={{ padding: "12px 14px", backgroundColor: "#0b0c0e", border: "1px solid #2b2d31", borderRadius: "8px", color: "#ffffff", fontSize: "14px", outline: "none" }}
                     />
                   )}
@@ -652,7 +652,7 @@ while True:
                     {/* Presence Content */}
                     <div style={{ display: "flex", flexDirection: "column", gap: "3px", flex: 1, overflow: "hidden" }}>
                       <span style={{ fontSize: "14px", fontWeight: "700", color: "#f2f3f5" }}>
-                        {appName || "Botless Utility Suite"}
+                        {appName || "Discapp Utility Suite"}
                       </span>
                       {showDetails && details && (
                         <span style={{ fontSize: "13px", color: "#dbdee1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

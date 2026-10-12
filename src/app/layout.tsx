@@ -13,10 +13,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Botless | All In One Toolkit",
+  title: "Discapp | All In One Toolkit",
   description: "Get access to every tool on Discord as well as libraries to help make your life much easier!",
   openGraph: {
-    title: "Botless | All In One Toolkit",
+    title: "Discapp | All In One Toolkit",
     description: "Get access to every tool on Discord as well as libraries to help make your life much easier!",
     url: "https://netlify.app",
   },
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body>
         <div className="app-shell">
           <nav className="topbar" aria-label="Main navigation">
-            <Link className="brand" href="/">BOTLESS</Link>
+            <Link className="brand" href="/">DISCAPP</Link>
             <Link className="topbar-link" href="https://discord.gg/ymc3Ba4qk9">Join the Community!</Link>
           </nav>
           {children}

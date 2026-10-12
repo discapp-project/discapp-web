@@ -7,9 +7,9 @@ import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
   {
-    title: 'Botless News',
+    title: 'Discapp News',
     description: 'Latest updates, feature releases, and announcements.',
-    href: '/botless-news',
+    href: '/discapp-news',
     icon: Newspaper,
     iconClass: 'news-icon'
   },
@@ -190,7 +190,7 @@ export default function Home() {
   return (
     <main className="page-wrap directory-page">
       <header className="directory-header">
-        <p className="page-kicker">Botless Toolkit</p>
+        <p className="page-kicker">Discapp Toolkit</p>
         <h1>Find easy to use tools for your Discord server!</h1>
         
         <div style={{ marginTop: '20px', position: 'relative', width: '100%', maxWidth: '480px' }}>
@@ -260,7 +260,7 @@ export default function Home() {
       </section>
 
       <footer style={{ marginTop: '48px', paddingTop: '20px', color: '#80848e', fontSize: '12px', textAlign: 'center', lineHeight: '1.5' }}>
-        Botless is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Discord Inc.
+        Discapp is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Discord Inc.
       </footer>
     </main>
   );

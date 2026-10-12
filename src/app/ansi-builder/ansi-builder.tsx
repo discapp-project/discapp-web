@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 
 export default function AnsiColorBuilder() {
-  const [text, setText] = useState<string>("Hello Botless!");
+  const [text, setText] = useState<string>("Hello Discapp!");
   const [textColor, setTextColor] = useState<string>("32"); // Green
   const [bgColor, setBgColor] = useState<string>(""); 
   const [styles, setStyles] = useState<{ bold: boolean; underline: boolean; dim: boolean }>({

@@ -11,7 +11,7 @@ export default function Head() {
           components: [
             {
               type: 10, // Text display component
-              content: "**Botless | All In One Toolkit**\nGet access to every tool on Discord as well as libraries to help make your life much easier!"
+              content: "**Discapp | All In One Toolkit**\nGet access to every tool on Discord as well as libraries to help make your life much easier!"
             }
           ],
           accessory: {
@@ -49,7 +49,7 @@ export default function Head() {
   return (
     <>
       {/* Essential metadata fallbacks for the Discord Crawler */}
-      <meta property="og:title" content="Botless | All In One Toolkit" />
+      <meta property="og:title" content="Discapp | All In One Toolkit" />
       <meta property="og:description" content="Get access to every tool on Discord as well as libraries to help make your life much easier!" />
       <meta property="og:url" content="https://netlify.app" />
 

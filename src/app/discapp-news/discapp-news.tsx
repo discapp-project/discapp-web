@@ -82,7 +82,7 @@ function renderSimpleMarkdown(text: string) {
   });
 }
 
-export default function BotlessNews() {
+export default function DiscappNews() {
   const [activeMeta, setActiveMeta] = useState<NewsletterMeta | null>(null);
   const [markdownContent, setMarkdownContent] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -146,7 +146,7 @@ export default function BotlessNews() {
           <div>
             <header style={{ marginBottom: '32px' }}>
               <p style={{ fontSize: '28px', fontWeight: '800', color: '#9bf0be', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>
-                <Newspaper size={28} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: '10px' }} /> Botless News!
+                <Newspaper size={28} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: '10px' }} /> Discapp News!
               </p>
 
               <p style={{ color: '#80848e', fontSize: '14px', margin: 0 }}>

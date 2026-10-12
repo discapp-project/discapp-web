@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AutomodLibrary from "./automod-library";
 
 export const metadata: Metadata = {
-  title: "Automod Library | Botless",
+  title: "Automod Library | Discapp",
   description: "View and copy automod rules and regexes.",
 };
 

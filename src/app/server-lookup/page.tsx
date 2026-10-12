@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ServerLookup from "./server-lookup";
 
 export const metadata: Metadata = {
-  title: "Server Lookup | Botless",
+  title: "Server Lookup | Discapp",
   description: "Get information about a Discord server by invite link.",
 };
 

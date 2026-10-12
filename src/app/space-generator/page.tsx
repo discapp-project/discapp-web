@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import SpaceGenerator from "./space-generator";
 
 export const metadata: Metadata = {
-  title: "Space Generator | Botless",
+  title: "Space Generator | Discapp",
   description: "Generate custom space-themed content for your Discord server.",
 };
 

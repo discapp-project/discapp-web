@@ -104,9 +104,9 @@ export async function POST(req: Request) {
     }
 
     // 4. Validate Server Environment Configuration
-    const botToken = process.env.BOTLESS_TOKEN;
+    const botToken = process.env.DISCAPP_TOKEN;
     if (!botToken) {
-      console.error('Configuration Error: BOTLESS_TOKEN is missing in environment variables.');
+      console.error('Configuration Error: Bot Token is missing in environment variables.');
       // Generic error message to prevent revealing internal env details
       return NextResponse.json(
         { message: 'Service temporarily unavailable. Please try again later.' },

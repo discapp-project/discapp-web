@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AutomodTester from "./automod-tester";
 
 export const metadata: Metadata = {
-  title: "Automod Tester | Botless",
+  title: "Automod Tester | Discapp",
   description: "Test automod regexes and keywords before implementation.",
 };
 

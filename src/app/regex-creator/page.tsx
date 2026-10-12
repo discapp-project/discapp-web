@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import RegexCreator from "./regex-creator";
 
 export const metadata: Metadata = {
-  title: "Regex Creator | Botless",
+  title: "Regex Creator | Discapp",
   description: "Create regexs for your Discord Automod.",
 };
 

@@ -366,7 +366,7 @@ export default function DiscordMarkdownLibrary() {
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                   <span style={{ fontWeight: '700', fontSize: '13px', color: '#ffffff' }}>
-                    Botless Previews
+                    Discapp Previews
                   </span>
                   <span style={{ backgroundColor: '#5865F2', color: '#ffffff', fontSize: '9px', fontWeight: '700', padding: '1px 3px', borderRadius: '2px' }}>
                     SYSTEM
