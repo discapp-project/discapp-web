@@ -188,7 +188,7 @@ export default function AutomodRegexCreator() {
             AutoMod Regex Builder
           </h1>
           <p style={{ color: "#80848e", fontSize: "14px", lineHeight: "1.5" }}>
-            Generate elite, evasion-proof pattern matchers tailored for server moderation rules.
+            Create regexes for your Discord automod rules.
           </p>
         </div>
 
