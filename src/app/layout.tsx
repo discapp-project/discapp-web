@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import BugReportButton from "./components/BugReportButton";
 import "./globals.css";
 
 // Interface for layout props
@@ -29,7 +30,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <div className="app-shell">
           <nav className="topbar" aria-label="Main navigation">
             <Link className="brand" href="/">DISCAPP</Link>
-            <Link className="topbar-link" href="https://discord.gg/ymc3Ba4qk9">Join the Community!</Link>
+            <div className="topbar-actions">
+              <Link className="topbar-link" href="https://discord.gg/ymc3Ba4qk9">Join the Community!</Link>
+              <BugReportButton />
+            </div>
           </nav>
           {children}
         </div>

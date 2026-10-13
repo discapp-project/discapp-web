@@ -6,7 +6,9 @@ The app runs from the workspace root. The builder lives in `src/app/webhook-buil
 
 Webhook URLs are credentials. The browser sends the URL to this app's API route, which forwards it to Discord over HTTPS. Do not use a webhook URL you are not authorized to control.
 
-The Discord user lookup API requires `DISCORD_BOT_TOKEN` in the local environment or deployment environment.
+The Discord user lookup API requires `DISCAPP_TOKEN` and `HCAPTCHA_SECRET_KEY` in the local environment or deployment environment. The public hCaptcha site key is configured as `NEXT_PUBLIC_HCAPTCHA_SITE_KEY`.
+
+Bug reports are verified with hCaptcha and delivered through a Discord webhook configured as `BUG_HOOK` in the server environment. Keep `BUG_HOOK`, `DISCAPP_TOKEN`, and `HCAPTCHA_SECRET_KEY` private; only the hCaptcha site key is intended to be public.
 
 ## Run locally
 

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { readLimitedBody, RequestBodyTooLargeError } from '../read-limited-body';
 
 // In-memory rate limit lock timestamp (in ms)
 let rateLimitResetTime = 0;
@@ -11,6 +12,10 @@ function sanitizeSnowflake(id: unknown): string | null {
   if (typeof id !== 'string') return null;
   const cleanId = id.trim();
   return /^\d{17,20}$/.test(cleanId) ? cleanId : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -46,17 +51,38 @@ async function verifyHCaptcha(token: string): Promise<boolean> {
 
 export async function POST(req: Request) {
   try {
-    // Basic payload size check to prevent memory allocation attacks
+    if (req.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') {
+      return NextResponse.json(
+        { message: 'Content-Type must be application/json.' },
+        { status: 415 }
+      );
+    }
+
     const contentLength = req.headers.get('content-length');
-    if (contentLength && parseInt(contentLength, 10) > 10240) { // 10KB limit
+    if (contentLength && /^\d+$/.test(contentLength) && Number(contentLength) > 10240) {
       return NextResponse.json(
         { message: 'Payload size exceeds limit.' },
         { status: 413 }
       );
     }
 
-    const body = await req.json().catch(() => null);
-    if (!body || typeof body !== 'object') {
+    let bodyText: string;
+    try {
+      bodyText = await readLimitedBody(req, 10240);
+    } catch (error) {
+      return NextResponse.json(
+        { message: error instanceof RequestBodyTooLargeError ? 'Payload size exceeds limit.' : 'Invalid request payload.' },
+        { status: error instanceof RequestBodyTooLargeError ? 413 : 400 }
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(bodyText);
+    } catch {
+      body = null;
+    }
+    if (!isRecord(body)) {
       return NextResponse.json(
         { message: 'Invalid request payload.' },
         { status: 400 }
@@ -74,7 +100,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!captchaToken || typeof captchaToken !== 'string') {
+    if (typeof captchaToken !== 'string' || captchaToken.trim().length === 0 || captchaToken.length > 4096) {
       return NextResponse.json(
         { message: 'CAPTCHA token is required.' },
         { status: 422 }
@@ -106,7 +132,7 @@ export async function POST(req: Request) {
     // 4. Validate Server Environment Configuration
     const botToken = process.env.DISCAPP_TOKEN;
     if (!botToken) {
-      console.error('Configuration Error: Bot Token is missing in environment variables.');
+      console.error('Our lookup token is either invalid or missing :(');
       // Generic error message to prevent revealing internal env details
       return NextResponse.json(
         { message: 'Service temporarily unavailable. Please try again later.' },

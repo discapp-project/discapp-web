@@ -42,8 +42,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-bottom: 1px solid var(--line);
 }
 .brand { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 750; letter-spacing: .08em; }
+.topbar-actions { display: flex; align-items: center; gap: 16px; }
 .topbar-link { color: var(--muted); text-decoration: none; font-size: 12px; }
 .topbar-link:hover, .brand:hover { color: white; }
+.bug-report-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; padding: 0; color: var(--muted); background: transparent; font-size: 12px; cursor: pointer; }
+.bug-report-trigger:hover { color: white; }
+.bug-report-dialog { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); width: min(480px, calc(100% - 28px)); max-height: min(90vh, 760px); overflow-y: auto; margin: 0; border: 1px solid var(--line-strong); border-radius: 7px; padding: 22px; color: var(--text); background: var(--surface); }
+.bug-report-dialog::backdrop { background: rgba(0, 0, 0, .72); backdrop-filter: blur(3px); }
+.bug-report-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.bug-report-kicker { margin: 0 0 6px; color: var(--subtle); font-size: 9px; font-weight: 650; letter-spacing: .08em; }
+.bug-report-heading h2 { margin: 0; font-size: 20px; font-weight: 650; }
+.bug-report-close { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: transparent; cursor: pointer; }
+.bug-report-close:hover { color: var(--text); }
+.bug-report-intro { margin: 9px 0 18px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.bug-report-form { display: flex; flex-direction: column; gap: 14px; }
+.bug-report-field { display: flex; flex-direction: column; gap: 6px; color: #d9dbe2; font-size: 11px; font-weight: 600; }
+.bug-report-field input, .bug-report-field textarea { width: 100%; border: 1px solid var(--line-strong); border-radius: 4px; padding: 9px 10px; color: var(--text); background: var(--bg); font-size: 12px; font-weight: 400; }
+.bug-report-field textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+.bug-report-field input::placeholder, .bug-report-field textarea::placeholder { color: var(--subtle); }
+.bug-report-captcha { display: flex; justify-content: center; overflow-x: auto; }
+.bug-report-captcha > p { margin: 0; color: #f0a2ad; font-size: 11px; }
+.bug-report-result { margin: -3px 0 0; font-size: 11px; line-height: 1.5; }
+.bug-report-result.is-error { color: #f0b5bc; }
+.bug-report-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.bug-report-actions button { min-height: 34px; border-radius: 4px; padding: 0 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.bug-report-cancel { border: 1px solid var(--line-strong); color: var(--muted); background: transparent; }
+.bug-report-submit { border: 1px solid var(--accent-line); color: #111714; background: var(--accent); }
+.bug-report-submit:disabled { border-color: var(--line); color: var(--subtle); background: #25262b; cursor: not-allowed; }
 .page-wrap { width: min(820px, calc(100% - 40px)); margin: 54px auto 72px; }
 .directory-header { margin-bottom: 27px; }
 .directory-header h1 { margin: 0; font-size: 27px; line-height: 1.2; font-weight: 650; }
@@ -318,6 +343,9 @@ a.preview-embed-title:hover { text-decoration: underline; }
 
 @media (max-width: 600px) {
   .topbar { height: 52px; padding: 0 17px; }
+  .topbar-actions { gap: 9px; }
+  .bug-report-trigger { gap: 5px; font-size: 10px; }
+  .bug-report-dialog { padding: 18px; }
   .page-wrap { width: calc(100% - 34px); margin-top: 36px; }
   .webhook-page { width: calc(100% - 28px); margin-top: 24px; }
   .webhook-heading { margin-bottom: 17px; }
