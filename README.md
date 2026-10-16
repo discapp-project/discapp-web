@@ -1,20 +1,12 @@
 # Discapp
 
-## Run locally
+## Configurations
+When hosting locally, make sure to do the following:
 
-From this directory:
-
-```bash
-npm install
-npm run dev
+Create a `.env`
 ```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## Production
-
-```bash
-npm run lint
-npm run build
-npm start
+DISCAPP_TOKEN=
+HCAPTCHA_SECRET_KEY=
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+BUG_HOOK=
 ```
