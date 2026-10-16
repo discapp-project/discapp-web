@@ -20,9 +20,8 @@ export default function AssetStealer() {
   const [asset, setAsset] = useState<AssetData | null>(null);
   const [error, setError] = useState('');
   
-  // Customization & Canvas Transformation Controls
   const [targetSize, setTargetSize] = useState<number>(128);
-  const [zoom, setZoom] = useState<number>(1); // 0.2x (Zoom out) to 2.5x (Zoom in)
+  const [zoom, setZoom] = useState<number>(1); 
   const [offsetX, setOffsetX] = useState<number>(0);
   const [offsetY, setOffsetY] = useState<number>(0);
   const [rotation, setRotation] = useState<number>(0);
@@ -41,7 +40,6 @@ export default function AssetStealer() {
       return;
     }
 
-    // 1. Custom Emoji Tag (<:name:id> or <a:name:id>)
     const emojiMatch = cleanInput.match(/<a?:([a-zA-Z0-9_]+):(\d+)>/);
     if (emojiMatch) {
       const name = emojiMatch[1];
@@ -61,7 +59,6 @@ export default function AssetStealer() {
       return;
     }
 
-    // 2. Direct Discord CDN Link
     const urlMatch = cleanInput.match(/cdn\.discordapp\.com\/(emojis|stickers)\/(\d+)\.(png|gif|webp|json)/);
     if (urlMatch) {
       const type = urlMatch[1];
@@ -82,7 +79,6 @@ export default function AssetStealer() {
       return;
     }
 
-    // 3. Raw Asset ID
     if (/^\d+$/.test(cleanInput)) {
       setAsset({
         id: cleanInput,
@@ -126,15 +122,12 @@ export default function AssetStealer() {
       ctx.clearRect(0, 0, targetSize, targetSize);
       ctx.save();
 
-      // Translate origin to center of canvas for transformations
       const center = targetSize / 2;
       ctx.translate(center + offsetX, center + offsetY);
 
-      // Apply flips and rotation
       ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
       ctx.rotate((rotation * Math.PI) / 180);
 
-      // Calculate zoomed dimensions
       const drawWidth = targetSize * zoom;
       const drawHeight = targetSize * zoom;
 
@@ -146,7 +139,6 @@ export default function AssetStealer() {
   const handleDownload = () => {
     if (!asset) return;
 
-    // For animated GIFs or direct downloads without edits
     if (asset.isAnimated) {
       const a = document.createElement('a');
       a.href = asset.rawUrl;
@@ -169,7 +161,6 @@ export default function AssetStealer() {
     <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '32px 16px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       <div style={{ maxWidth: '850px', margin: '0 auto' }}>
 
-        {/* Page Header */}
         <header style={{ marginBottom: '28px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#ffffff', marginBottom: '8px', letterSpacing: '-0.02em' }}>
             Asset Stealer
@@ -179,7 +170,6 @@ export default function AssetStealer() {
           </p>
         </header>
 
-        {/* Input Container */}
         <div style={{ backgroundColor: '#1c1d22', borderRadius: '8px', border: '1px solid #2b2d31', padding: '20px', marginBottom: '20px' }}>
           <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#b5bac1', textTransform: 'uppercase', marginBottom: '8px' }}>
             Emoji, Sticker, or Asset ID
@@ -232,12 +222,10 @@ export default function AssetStealer() {
           )}
         </div>
 
-        {/* Dynamic Display / Controls */}
         {asset ? (
           <div style={{ backgroundColor: '#1c1d22', borderRadius: '8px', border: '1px solid #2b2d31', padding: '24px', marginBottom: '32px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '28px', alignItems: 'start' }}>
               
-              {/* Image Preview Canvas */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '220px',
@@ -285,7 +273,6 @@ export default function AssetStealer() {
                 )}
               </div>
 
-              {/* Asset Editing Controls */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff', margin: '0 0 4px 0' }}>{asset.name}</h3>
@@ -294,7 +281,6 @@ export default function AssetStealer() {
 
                 {!asset.isAnimated && (
                   <>
-                    {/* Target Resolution */}
                     <div>
                       <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '600', color: '#b5bac1', marginBottom: '6px' }}>
                         <span>Target Resolution</span>
@@ -312,7 +298,6 @@ export default function AssetStealer() {
                       </select>
                     </div>
 
-                    {/* Zoom In / Out */}
                     <div>
                       <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '600', color: '#b5bac1', marginBottom: '6px' }}>
                         <span>Zoom</span>
@@ -329,7 +314,6 @@ export default function AssetStealer() {
                       />
                     </div>
 
-                    {/* Position Adjustments (X & Y) */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#b5bac1', marginBottom: '6px' }}>
@@ -359,7 +343,6 @@ export default function AssetStealer() {
                       </div>
                     </div>
 
-                    {/* Rotation & Flips */}
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                       <div style={{ flex: 1 }}>
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#b5bac1', marginBottom: '6px' }}>
@@ -406,7 +389,6 @@ export default function AssetStealer() {
                       </button>
                     </div>
 
-                    {/* Export Format Toggle */}
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#b5bac1', marginBottom: '6px' }}>
                         Export Format
@@ -478,14 +460,12 @@ export default function AssetStealer() {
           </div>
         )}
 
-        {/* Instructions */}
         <div style={{ borderTop: '1px solid #1e2024', paddingTop: '28px', marginTop: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff', fontSize: '16px', fontWeight: '700', marginBottom: '16px' }}>
             <HelpCircle size={18} style={{ color: '#9bf0be' }} /> How to copy custom emojis
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-            {/* Desktop */}
             <div style={{ backgroundColor: '#1c1d22', border: '1px solid #2b2d31', borderRadius: '6px', padding: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9bf0be', fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>
                 <Laptop size={14} /> PC / Desktop App
@@ -498,7 +478,6 @@ export default function AssetStealer() {
               </ol>
             </div>
 
-            {/* Mobile */}
             <div style={{ backgroundColor: '#1c1d22', border: '1px solid #2b2d31', borderRadius: '6px', padding: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#9bf0be', fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>
                 <Smartphone size={14} /> Mobile App (iOS / Android)

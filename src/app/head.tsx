@@ -3,36 +3,35 @@
 export default function Head() {
   const discordComponentEmbed = {
     component: {
-      type: 17, // Container component
-      accent_color: 11335333, // Hex #acf6a5 converted to decimal number
+      type: 17, 
+      accent_color: 11335333, 
       components: [
         {
-          type: 9, // Section component
+          type: 9, 
           components: [
             {
-              type: 10, // Text display component
+              type: 10, 
               content: "**Discapp | All In One Toolkit**\nGet access to every tool on Discord as well as libraries to help make your life much easier!"
             }
           ],
           accessory: {
-            type: 11, // Thumbnail accessory format
+            type: 11, 
             media: {
-              // Ensure this points directly to your permanent production icon asset!
-              url: "https://netlify.app"
+              url: "https://discapp.org"
             }
           }
         },
         {
-          type: 14 // Separator line component
+          type: 14 
         },
         {
-          type: 1, // Action Row component to hold buttons
+          type: 1, 
           components: [
             {
-              type: 2, // Button component
-              style: 5, // Style 5 = Link button
+              type: 2, 
+              style: 5, 
               label: "Website",
-              url: "https://netlify.app"
+              url: "https://discapp.org"
             },
             {
               type: 2,
@@ -48,12 +47,10 @@ export default function Head() {
 
   return (
     <>
-      {/* Essential metadata fallbacks for the Discord Crawler */}
       <meta property="og:title" content="Discapp | All In One Toolkit" />
       <meta property="og:description" content="Get access to every tool on Discord as well as libraries to help make your life much easier!" />
-      <meta property="og:url" content="https://netlify.app" />
+      <meta property="og:url" content="https://discapp.org" />
 
-      {/* Validated Discord Native Component Payload */}
       <script
         id="discord:component-embed"
         type="application/vnd.discord.component-embed+json"

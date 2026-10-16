@@ -108,7 +108,6 @@ export default function EmojiStickerCompressor() {
     <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "sans-serif", padding: "40px 24px" }}>
       <div style={{ maxWidth: "896px", margin: "0 auto" }}>
         
-        {/* Title Block */}
         <div style={{ marginBottom: "32px" }}>
           <h1 style={{ fontSize: "32px", fontWeight: "700", letterSpacing: "-0.025em", color: "#ffffff", marginBottom: "8px" }}>
             Emoji & Sticker Compressor
@@ -118,10 +117,8 @@ export default function EmojiStickerCompressor() {
           </p>
         </div>
 
-        {/* Main Card */}
         <div style={{ backgroundColor: "#111214", border: "1px solid #1e1f22", borderRadius: "12px", padding: "24px" }}>
           
-          {/* Target Type Selector Tabs */}
           <div style={{ display: "inline-flex", backgroundColor: "#1e1f22", borderRadius: "8px", padding: "4px", marginBottom: "24px" }}>
             <button
               onClick={() => setTargetType("emoji")}
@@ -159,7 +156,6 @@ export default function EmojiStickerCompressor() {
             </button>
           </div>
 
-          {/* File Upload Zone */}
           <div style={{ position: "relative", marginBottom: "24px" }}>
             <input
               type="file"
@@ -193,7 +189,6 @@ export default function EmojiStickerCompressor() {
             </label>
           </div>
 
-          {/* Controls & Options */}
           {file && (
             <div style={{ backgroundColor: "#16181b", border: "1px solid #1e1f22", borderRadius: "8px", padding: "16px", marginBottom: "24px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
@@ -245,11 +240,9 @@ export default function EmojiStickerCompressor() {
             </div>
           )}
 
-          {/* Previews Container */}
           {(previewUrl || compressedUrl) && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
               
-              {/* Original Preview */}
               {previewUrl && (
                 <div style={{ backgroundColor: "#16181b", border: "1px solid #1e1f22", borderRadius: "8px", padding: "16px" }}>
                   <div style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", color: "#80848e", marginBottom: "12px" }}>
@@ -273,7 +266,6 @@ export default function EmojiStickerCompressor() {
                 </div>
               )}
 
-              {/* Compressed Preview */}
               {compressedUrl && (
                 <div style={{ backgroundColor: "#16181b", border: "1px solid #1e1f22", borderRadius: "8px", padding: "16px" }}>
                   <div style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", color: "#80848e", marginBottom: "12px" }}>

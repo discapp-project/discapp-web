@@ -45,11 +45,9 @@ export default function AutoModRegexLibrary() {
     filteredRules[0] ??
     null;
 
-  // Robust Copy Handler with Fallback
   const handleCopy = async (text: string, key: string) => {
     let success = false;
 
-    // 1. Try Modern Clipboard API
     if (navigator.clipboard && window.isSecureContext) {
       try {
         await navigator.clipboard.writeText(text);
@@ -59,7 +57,6 @@ export default function AutoModRegexLibrary() {
       }
     }
 
-    // 2. Fallback for HTTP / non-secure contexts or older browsers
     if (!success) {
       try {
         const textArea = document.createElement("textarea");

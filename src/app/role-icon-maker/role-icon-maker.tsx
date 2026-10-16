@@ -205,13 +205,11 @@ export default function RoleIconBuilder() {
   const [customText, setCustomText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Customization - Shape
   const [selectedShape, setSelectedShape] = useState("badge");
   const [shapeScale, setShapeScale] = useState(100);
   const [shapeRotation, setShapeRotation] = useState(0);
   const [shapeCornerRadius, setShapeCornerRadius] = useState(24);
 
-  // Customization - Style
   const [bgColor, setBgColor] = useState("#5865F2");
   const [useGradientBg, setUseGradientBg] = useState(false);
   const [bgGradientEnd, setBgGradientEnd] = useState("#eb459e");
@@ -228,7 +226,6 @@ export default function RoleIconBuilder() {
   const [fontFamily, setFontFamily] = useState("sans-serif");
   const [fontWeight, setFontWeight] = useState("bold");
 
-  // Customization - Effects
   const [iconOffsetX, setIconOffsetX] = useState(0);
   const [iconOffsetY, setIconOffsetY] = useState(0);
   const [iconRotation, setIconRotation] = useState(0);

@@ -329,7 +329,6 @@ export async function POST(request: Request) {
         if (typeof responseBody.retry_after === "number") retryAfter = responseBody.retry_after;
       }
     } catch {
-      // Do not return non-JSON upstream response bodies.
     }
 
     return NextResponse.json(

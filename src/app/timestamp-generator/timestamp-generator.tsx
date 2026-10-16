@@ -170,7 +170,6 @@ export default function DiscordTimestampGenerator() {
     <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "sans-serif", padding: "32px 20px" }}>
       <div style={{ maxWidth: "580px", margin: "0 auto" }}>
         
-        {/* Header */}
         <div style={{ marginBottom: "24px" }}>
           <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#ffffff", marginBottom: "6px" }}>
             Discord Timestamp Generator
@@ -180,10 +179,8 @@ export default function DiscordTimestampGenerator() {
           </p>
         </div>
 
-        {/* COMBINED CARD */}
         <div style={{ backgroundColor: "#141518", border: "1px solid #232428", borderRadius: "10px", padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
           
-          {/* Target Date & Time Input */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <label style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600" }}>
               Target Date & Time
@@ -223,7 +220,6 @@ export default function DiscordTimestampGenerator() {
             </div>
           </div>
 
-          {/* Custom Format Selector Dropdown */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }} ref={dropdownRef}>
             <label style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600" }}>
               Timestamp Display Format
@@ -304,7 +300,6 @@ export default function DiscordTimestampGenerator() {
             </div>
           </div>
 
-          {/* Output Code & Copy Action */}
           <div style={{ display: "flex", gap: "10px", alignItems: "center", marginTop: "4px" }}>
             <code style={{ flex: 1, backgroundColor: "#0b0c0e", border: "1px solid #232428", padding: "10px 14px", borderRadius: "6px", fontSize: "14px", color: "#acf6c8", fontFamily: "monospace", overflowX: "auto" }}>
               {generatedCode}

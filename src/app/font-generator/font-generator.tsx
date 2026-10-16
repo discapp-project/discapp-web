@@ -6,9 +6,7 @@ interface FontTransform {
   transform: (text: string) => string;
 }
 
-// 36+ Discord-Compatible Unicode Font Transformations
 const FONT_TRANSFORMS: FontTransform[] = [
-  // 1. Small Caps
   {
     transform: (text) => {
       const map: Record<string, string> = {
@@ -20,7 +18,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
       return text.toLowerCase().split("").map((c) => map[c] || c).join("");
     },
   },
-  // 2. Bold Sans
   {
     transform: (text) =>
       text.replace(/[a-zA-Z0-9]/g, (c) => {
@@ -31,7 +28,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 3. Italic Sans
   {
     transform: (text) =>
       text.replace(/[a-zA-Z]/g, (c) => {
@@ -41,7 +37,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 4. Bold Italic Sans
   {
     transform: (text) =>
       text.replace(/[a-zA-Z]/g, (c) => {
@@ -51,7 +46,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 5. Bold Serif
   {
     transform: (text) =>
       text.replace(/[a-zA-Z0-9]/g, (c) => {
@@ -62,7 +56,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 6. Italic Serif
   {
     transform: (text) =>
       text.replace(/[a-zA-Z]/g, (c) => {
@@ -72,7 +65,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 7. Bold Italic Serif
   {
     transform: (text) =>
       text.replace(/[a-zA-Z]/g, (c) => {
@@ -82,7 +74,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 8. Monospace
   {
     transform: (text) =>
       text.replace(/[a-zA-Z0-9]/g, (c) => {
@@ -93,7 +84,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 9. Cursive / Script
   {
     transform: (text) => {
       const map: Record<string, string> = {
@@ -108,7 +98,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
       return text.split("").map((c) => map[c] || c).join("");
     },
   },
-  // 10. Bold Script
   {
     transform: (text) =>
       text.replace(/[a-zA-Z]/g, (c) => {
@@ -118,7 +107,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 11. Fraktur / Gothic
   {
     transform: (text) => {
       const map: Record<string, string> = {
@@ -133,7 +121,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
       return text.split("").map((c) => map[c] || c).join("");
     },
   },
-  // 12. Bold Fraktur / Gothic
   {
     transform: (text) =>
       text.replace(/[a-zA-Z]/g, (c) => {
@@ -143,7 +130,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 13. Double Struck
   {
     transform: (text) => {
       const map: Record<string, string> = {
@@ -158,7 +144,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
       return text.split("").map((c) => map[c] || c).join("");
     },
   },
-  // 14. Circled
   {
     transform: (text) =>
       text.replace(/[a-zA-Z0-9]/g, (c) => {
@@ -170,7 +155,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 15. Negative Circled (Dark Circles)
   {
     transform: (text) =>
       text.toUpperCase().replace(/[A-Z0-9]/g, (c) => {
@@ -181,42 +165,33 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 16. Squared / Block
   {
     transform: (text) =>
       text.toUpperCase().replace(/[A-Z]/g, (c) => String.fromCodePoint(0x1f130 + c.charCodeAt(0) - 65)),
   },
-  // 17. Negative Squared (Dark Blocks)
   {
     transform: (text) =>
       text.toUpperCase().replace(/[A-Z]/g, (c) => String.fromCodePoint(0x1f170 + c.charCodeAt(0) - 65)),
   },
-  // 18. Aesthetic / Fullwidth
   {
     transform: (text) =>
       text.replace(/[!-~]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0xfee0)),
   },
-  // 19. Strikethrough
   {
     transform: (text) => text.split("").join("\u0336") + "\u0336",
   },
-  // 20. Underline
   {
     transform: (text) => text.split("").join("\u0332") + "\u0332",
   },
-  // 21. Double Underline
   {
     transform: (text) => text.split("").join("\u0333") + "\u0333",
   },
-  // 22. Tilted / Slash Through
   {
     transform: (text) => text.split("").join("\u0338"),
   },
-  // 23. Overline / Top Line
   {
     transform: (text) => text.split("").join("\u0305") + "\u0305",
   },
-  // 24. Superscript
   {
     transform: (text) => {
       const map: Record<string, string> = {
@@ -228,7 +203,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
       return text.toLowerCase().split("").map((c) => map[c] || c).join("");
     },
   },
-  // 25. Subscript
   {
     transform: (text) => {
       const map: Record<string, string> = {
@@ -239,7 +213,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
       return text.toLowerCase().split("").map((c) => map[c] || c).join("");
     },
   },
-  // 26. Inverted / Upside Down
   {
     transform: (text) => {
       const map: Record<string, string> = {
@@ -254,7 +227,6 @@ const FONT_TRANSFORMS: FontTransform[] = [
       return text.split("").reverse().map((c) => map[c] || c).join("");
     },
   },
-  // 27. Parenthesized Letters
   {
     transform: (text) =>
       text.replace(/[a-zA-Z]/g, (c) => {
@@ -264,39 +236,30 @@ const FONT_TRANSFORMS: FontTransform[] = [
         return c;
       }),
   },
-  // 28. Dotted Border
   {
     transform: (text) => text.split("").join("\u0307"),
   },
-  // 29. Wide Spaced Accent
   {
     transform: (text) => text.toUpperCase().split("").join("  "),
   },
-  // 30. Bracket Decorator
   {
     transform: (text) => `⟦ ${text} ⟧`,
   },
-  // 31. Sparkle Decorator
   {
     transform: (text) => `✧･ﾟ ${text} ﾟ･✧`,
   },
-  // 32. Cross Decorator
   {
     transform: (text) => `† ${text} †`,
   },
-  // 33. Heart Decorator
   {
     transform: (text) => `♥ ${text} ♥`,
   },
-  // 34. Star Decorator
   {
     transform: (text) => `★ ${text} ★`,
   },
-  // 35. Japanese Bracket Accent
   {
     transform: (text) => `【 ${text} 】`,
   },
-  // 36. Wing Accent
   {
     transform: (text) => `꧁ ${text} ꧂`,
   },
@@ -323,7 +286,6 @@ export default function DiscordFontGenerator() {
       }}
     >
       <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
-        {/* Header Section */}
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             Discord Font Generator
@@ -333,7 +295,6 @@ export default function DiscordFontGenerator() {
           </p>
         </div>
 
-        {/* Top Sticky Input Bar */}
         <div
           style={{
             position: "sticky",
@@ -372,7 +333,6 @@ export default function DiscordFontGenerator() {
           </div>
         </div>
 
-        {/* 3-Column Box Grid */}
         <div
           style={{
             display: "grid",
@@ -416,7 +376,6 @@ export default function DiscordFontGenerator() {
                   }
                 }}
               >
-                {/* Styled Output */}
                 <div
                   style={{
                     fontSize: "18px",
@@ -429,7 +388,6 @@ export default function DiscordFontGenerator() {
                   {transformedText}
                 </div>
 
-                {/* Bottom Action Button */}
                 <button
                   type="button"
                   onClick={(e) => {

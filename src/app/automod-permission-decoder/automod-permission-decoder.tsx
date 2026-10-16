@@ -10,7 +10,6 @@ interface PermissionFlag {
 }
 
 const DISCORD_PERMISSIONS: PermissionFlag[] = [
-  // General
   { name: "Administrator", description: "Vetoes all permissions; grants full server control", bit: 1n << 3n, category: "General" },
   { name: "Manage Server", description: "Allows editing server name, icon, region, and adding bots", bit: 1n << 5n, category: "General" },
   { name: "Manage Roles", description: "Allows creating, editing, and deleting roles below their highest role", bit: 1n << 28n, category: "General" },
@@ -20,7 +19,6 @@ const DISCORD_PERMISSIONS: PermissionFlag[] = [
   { name: "Manage Webhooks", description: "Allows creating, editing, and deleting webhooks", bit: 1n << 29n, category: "General" },
   { name: "Manage Expressions", description: "Allows creating, editing, and deleting custom emojis and stickers", bit: 1n << 30n, category: "General" },
 
-  // Membership
   { name: "Kick Members", description: "Allows removing members from the server", bit: 1n << 1n, category: "Membership" },
   { name: "Ban Members", description: "Allows permanently banning members from the server", bit: 1n << 2n, category: "Membership" },
   { name: "Create Invite", description: "Allows users to invite new members to the server", bit: 1n << 0n, category: "Membership" },
@@ -28,7 +26,6 @@ const DISCORD_PERMISSIONS: PermissionFlag[] = [
   { name: "Manage Nicknames", description: "Allows changing other members' nicknames", bit: 1n << 27n, category: "Membership" },
   { name: "Moderate Members", description: "Allows timing out members and preventing them from speaking", bit: 1n << 40n, category: "Membership" },
 
-  // Text
   { name: "Send Messages", description: "Allows sending messages in text channels", bit: 1n << 11n, category: "Text" },
   { name: "Send Messages in Threads", description: "Allows participating in threads", bit: 1n << 38n, category: "Text" },
   { name: "Create Public Threads", description: "Allows creating public discussion threads", bit: 1n << 35n, category: "Text" },
@@ -41,7 +38,6 @@ const DISCORD_PERMISSIONS: PermissionFlag[] = [
   { name: "Read Message History", description: "Allows viewing past messages in channels", bit: 1n << 16n, category: "Text" },
   { name: "Mention @everyone", description: "Allows mentioning @everyone, @here, and all roles", bit: 1n << 17n, category: "Text" },
 
-  // Voice
   { name: "Connect", description: "Allows joining voice channels", bit: 1n << 20n, category: "Voice" },
   { name: "Speak", description: "Allows talking in voice channels", bit: 1n << 21n, category: "Voice" },
   { name: "Mute Members", description: "Allows forcefully muting other members in voice channels", bit: 1n << 22n, category: "Voice" },
@@ -50,7 +46,6 @@ const DISCORD_PERMISSIONS: PermissionFlag[] = [
   { name: "Priority Speaker", description: "Allows lower audio ducking for others when speaking", bit: 1n << 8n, category: "Voice" },
   { name: "Use Soundboard", description: "Allows playing soundboard sounds in voice channels", bit: 1n << 45n, category: "Voice" },
 
-  // Advanced
   { name: "View Channel", description: "Allows reading channel content (base permission)", bit: 1n << 10n, category: "Advanced" },
   { name: "Manage Events", description: "Allows creating and managing scheduled server events", bit: 1n << 33n, category: "Advanced" },
   { name: "Manage Threads", description: "Allows renaming, locking, and deleting threads", bit: 1n << 34n, category: "Advanced" },
@@ -63,7 +58,6 @@ export default function AuditLogPermissionDecoder() {
   const [filterMode, setFilterMode] = useState<"all" | "enabled" | "disabled">("all");
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Parse BigInt safely
   let parsedValue = 0n;
   try {
     if (permissionInput.trim() !== "") {
@@ -73,7 +67,6 @@ export default function AuditLogPermissionDecoder() {
     parsedValue = 0n;
   }
 
-  // Toggle individual permission bit accurately
   const togglePermissionBit = (bit: bigint) => {
     let current = parsedValue;
     if ((current & bit) === bit) {
@@ -92,7 +85,6 @@ export default function AuditLogPermissionDecoder() {
 
   const categories = ["All", "General", "Membership", "Text", "Voice", "Advanced"];
 
-  // Filter logic
   const filteredPermissions = DISCORD_PERMISSIONS.filter((p) => {
     const isEnabled = (parsedValue & p.bit) === p.bit;
     
@@ -120,7 +112,6 @@ export default function AuditLogPermissionDecoder() {
     >
       <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
         
-        {/* Header Section */}
         <div style={{ marginBottom: "28px", textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             Audit Log Permission Decoder
@@ -130,7 +121,6 @@ export default function AuditLogPermissionDecoder() {
           </p>
         </div>
 
-        {/* Top Control Panel Card */}
         <div
           style={{
             backgroundColor: "#141518",
@@ -142,7 +132,6 @@ export default function AuditLogPermissionDecoder() {
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             
-            {/* Input & Copy Bar */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <label style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -191,7 +180,6 @@ export default function AuditLogPermissionDecoder() {
               </div>
             </div>
 
-            {/* Presets & Quick Actions */}
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center", paddingTop: "4px" }}>
               <span style={{ fontSize: "12px", color: "#80848e", fontWeight: "600" }}>Presets:</span>
               {[
@@ -222,10 +210,8 @@ export default function AuditLogPermissionDecoder() {
           </div>
         </div>
 
-        {/* Search & Filter Toolbar */}
         <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
           
-          {/* Category Tabs */}
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
             {categories.map((cat) => {
               const isActive = selectedCategory === cat;
@@ -251,7 +237,6 @@ export default function AuditLogPermissionDecoder() {
             })}
           </div>
 
-          {/* Search & Status Filters */}
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <input
               type="text"
@@ -292,7 +277,6 @@ export default function AuditLogPermissionDecoder() {
 
         </div>
 
-        {/* Permissions Grid */}
         <div
           style={{
             display: "grid",

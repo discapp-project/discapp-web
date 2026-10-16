@@ -16,7 +16,6 @@ export async function readLimitedBody(request: Request, maxBytes: number) {
         try {
           await reader.cancel();
         } catch {
-          // The size error remains the relevant request failure.
         }
         throw new RequestBodyTooLargeError();
       }

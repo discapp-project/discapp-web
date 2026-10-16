@@ -4,7 +4,7 @@ import React, { useState } from "react";
 
 export default function AnsiColorBuilder() {
   const [text, setText] = useState<string>("Hello Discapp!");
-  const [textColor, setTextColor] = useState<string>("32"); // Green
+  const [textColor, setTextColor] = useState<string>("32"); 
   const [bgColor, setBgColor] = useState<string>(""); 
   const [styles, setStyles] = useState<{ bold: boolean; underline: boolean; dim: boolean }>({
     bold: true,
@@ -17,7 +17,6 @@ export default function AnsiColorBuilder() {
     setStyles((prev) => ({ ...prev, [key]: !prev[key] }))
   };
 
-  // Generate ANSI codeblock output
   const generateOutputBlock = () => {
     const codes: string[] = [];
     if (styles.bold) codes.push("1");
@@ -50,7 +49,6 @@ export default function AnsiColorBuilder() {
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "28px" }}>
         
-        {/* Header Section */}
         <div style={{ textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             ANSI Color & Style Builder
@@ -60,16 +58,13 @@ export default function AnsiColorBuilder() {
           </p>
         </div>
 
-        {/* Workspace Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "24px", alignItems: "start" }}>
           
-          {/* LEFT COLUMN: Controls & Options */}
           <div style={{ backgroundColor: "#141518", border: "1px solid #232428", borderRadius: "12px", padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
             <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#ffffff", margin: 0 }}>
               ANSI Palette & Modifiers
             </h3>
 
-            {/* Input Text */}
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
                 Your Text
@@ -83,7 +78,6 @@ export default function AnsiColorBuilder() {
               />
             </div>
 
-            {/* Foreground Text Color Selector */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
                 Foreground Color
@@ -123,7 +117,6 @@ export default function AnsiColorBuilder() {
               </div>
             </div>
 
-            {/* Background Color Selector */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
                 Background Color (Optional)
@@ -163,7 +156,6 @@ export default function AnsiColorBuilder() {
               </div>
             </div>
 
-            {/* Style Toggles */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
                 Text Modifiers
@@ -189,16 +181,13 @@ export default function AnsiColorBuilder() {
 
           </div>
 
-          {/* RIGHT COLUMN: Live Preview & Discord Block Output */}
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             
-            {/* Live Discord Render Preview */}
             <div style={{ backgroundColor: "#141518", border: "1px solid #232428", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
               <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
                 Preview
               </span>
               
-              {/* Realistic Discord Dark Theme Codeblock Box */}
               <div style={{ backgroundColor: "#2b2d31", borderRadius: "4px", borderLeft: "4px solid #232428", padding: "12px", fontFamily: "Consolas, Monaco, 'Courier New', monospace", fontSize: "13px", lineHeight: "1.4" }}>
                 <span
                   style={{
@@ -214,7 +203,6 @@ export default function AnsiColorBuilder() {
               </div>
             </div>
 
-            {/* Code Output Box */}
             <div style={{ backgroundColor: "#141518", border: "1px solid #232428", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>

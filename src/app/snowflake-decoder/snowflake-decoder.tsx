@@ -1,4 +1,3 @@
-// src/app/snowflake-decoder/snowflake-decoder.tsx
 'use client';
 
 import { useState } from 'react';
@@ -70,7 +69,6 @@ export default function SnowflakeDecoder() {
     <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '32px 24px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       <div style={{ width: '100%', margin: '0' }}>
         
-        {/* Far-Left Header */}
         <header style={{ marginBottom: '28px', textAlign: 'left' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#ffffff', marginBottom: '8px', letterSpacing: '-0.02em' }}>
             Discord Snowflake Decoder
@@ -80,7 +78,6 @@ export default function SnowflakeDecoder() {
           </p>
         </header>
 
-        {/* Input Box Card */}
         <div style={{ backgroundColor: '#1c1d22', borderRadius: '8px', border: '1px solid #2b2d31', padding: '20px', marginBottom: '20px' }}>
           <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#b5bac1', textTransform: 'uppercase', marginBottom: '8px' }}>
             Discord ID or Snowflake
@@ -134,7 +131,6 @@ export default function SnowflakeDecoder() {
           )}
         </div>
 
-        {/* Decoded Results Card or Empty Placeholder */}
         {result ? (
           <div style={{ backgroundColor: '#1c1d22', borderRadius: '8px', border: '1px solid #2b2d31', padding: '24px' }}>
             <div style={{ borderBottom: '1px solid #2b2d31', paddingBottom: '16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
@@ -147,10 +143,8 @@ export default function SnowflakeDecoder() {
               </span>
             </div>
 
-            {/* Grid Metrics */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               
-              {/* Date Output */}
               <div style={{ backgroundColor: '#111214', borderRadius: '6px', border: '1px solid #2b2d31', padding: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#80848e', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px' }}>
                   <Calendar size={14} style={{ color: '#9bf0be' }} /> Date Created
@@ -160,7 +154,6 @@ export default function SnowflakeDecoder() {
                 </div>
               </div>
 
-              {/* Exact Time Output */}
               <div style={{ backgroundColor: '#111214', borderRadius: '6px', border: '1px solid #2b2d31', padding: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#80848e', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px' }}>
                   <Clock size={14} style={{ color: '#9bf0be' }} /> Exact Time
@@ -170,7 +163,6 @@ export default function SnowflakeDecoder() {
                 </div>
               </div>
 
-              {/* Unix Epoch */}
               <div style={{ backgroundColor: '#111214', borderRadius: '6px', border: '1px solid #2b2d31', padding: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#80848e', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px' }}>
                   <Hash size={14} style={{ color: '#9bf0be' }} /> Unix Timestamp
@@ -180,7 +172,6 @@ export default function SnowflakeDecoder() {
                 </div>
               </div>
 
-              {/* Internal Metas */}
               <div style={{ backgroundColor: '#111214', borderRadius: '6px', border: '1px solid #2b2d31', padding: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#80848e', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px' }}>
                   <Cpu size={14} style={{ color: '#9bf0be' }} /> Worker / Process ID

@@ -69,12 +69,10 @@ export default function UniversalAssetResizer() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<AssetType>("serverBanner");
 
-  // Transform States
   const [scale, setScale] = useState<number>(1);
   const [offsetX, setOffsetX] = useState<number>(0);
   const [offsetY, setOffsetY] = useState<number>(0);
 
-  // Expanded Canvas & Blur Settings
   const [enableBlurFill, setEnableBlurFill] = useState<boolean>(true);
   const [blurAmount, setBlurAmount] = useState<number>(20);
   const [bgBrightness, setBgBrightness] = useState<number>(70);
@@ -131,7 +129,6 @@ export default function UniversalAssetResizer() {
 
       ctx.clearRect(0, 0, preset.width, preset.height);
 
-      // Base Aspect Fill Computations
       const imgAspect = img.width / img.height;
       let baseWidth = preset.width;
       let baseHeight = preset.height;
@@ -142,12 +139,10 @@ export default function UniversalAssetResizer() {
         baseHeight = preset.width / imgAspect;
       }
 
-      // 1. Render Blurred Extended Background (If Enabled)
       if (enableBlurFill) {
         ctx.save();
         ctx.filter = `blur(${blurAmount}px) brightness(${bgBrightness}%)`;
 
-        // Overscale background image slightly to avoid white edge bleeding from blur
         const bgScale = 1.25;
         const bgW = baseWidth * bgScale;
         const bgH = baseHeight * bgScale;
@@ -158,7 +153,6 @@ export default function UniversalAssetResizer() {
         ctx.restore();
       }
 
-      // 2. Render Main Foreground Image
       const drawWidth = baseWidth * scale;
       const drawHeight = baseHeight * scale;
 
@@ -167,7 +161,6 @@ export default function UniversalAssetResizer() {
 
       ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
 
-      // Export Canvas Result
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -201,7 +194,6 @@ export default function UniversalAssetResizer() {
     <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "sans-serif", padding: "40px 24px" }}>
       <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
         
-        {/* Header Title */}
         <div style={{ marginBottom: "28px" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", letterSpacing: "-0.025em", color: "#ffffff", marginBottom: "6px" }}>
             Discord Asset Resizer
@@ -211,7 +203,6 @@ export default function UniversalAssetResizer() {
           </p>
         </div>
 
-        {/* Upload Box */}
         <div style={{ position: "relative", marginBottom: "20px" }}>
           <input
             type="file"
@@ -244,7 +235,6 @@ export default function UniversalAssetResizer() {
           </label>
         </div>
 
-        {/* Error Alert */}
         {errorMessage && (
           <div style={{ backgroundColor: "rgba(242, 63, 67, 0.1)", border: "1px solid #f23f43", borderRadius: "8px", padding: "12px 16px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px", color: "#f23f43", fontSize: "13px" }}>
             <AlertCircle style={{ width: "18px", height: "18px", flexShrink: 0 }} />
@@ -252,10 +242,8 @@ export default function UniversalAssetResizer() {
           </div>
         )}
 
-        {/* Main Workspace Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: "20px", alignItems: "start" }}>
           
-          {/* Preset Selector */}
           <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
             <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", color: "#80848e", marginBottom: "4px" }}>
               Target Format
@@ -301,10 +289,8 @@ export default function UniversalAssetResizer() {
             })}
           </div>
 
-          {/* Canvas Viewport & Controls */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             
-            {/* Viewport Box */}
             <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
               <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center", marginBottom: "16px" }}>
                 <span style={{ fontSize: "13px", fontWeight: "500", color: "#b5bac1" }}>
@@ -331,7 +317,6 @@ export default function UniversalAssetResizer() {
                 </button>
               </div>
 
-              {/* Viewport Render Box */}
               <div
                 style={{
                   width: "100%",
@@ -351,7 +336,6 @@ export default function UniversalAssetResizer() {
                 {previewUrl ? (
                   <div style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden" }}>
                     
-                    {/* Extended Blurred Background Layer */}
                     {enableBlurFill && (
                       <img
                         src={previewUrl}
@@ -369,7 +353,6 @@ export default function UniversalAssetResizer() {
                       />
                     )}
 
-                    {/* Scaled & Positioned Foreground Image */}
                     <img
                       src={previewUrl}
                       alt="Asset Foreground"
@@ -393,11 +376,9 @@ export default function UniversalAssetResizer() {
               </div>
             </div>
 
-            {/* Adjustment Controls */}
             {file && (
               <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
                 
-                {/* Zoom Control */}
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#b5bac1", marginBottom: "8px" }}>
                     <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Maximize2 style={{ width: "14px", height: "14px" }} /> Zoom Level</span>
@@ -414,7 +395,6 @@ export default function UniversalAssetResizer() {
                   />
                 </div>
 
-                {/* Horizontal Shift */}
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#b5bac1", marginBottom: "8px" }}>
                     <span>Horizontal Shift</span>
@@ -431,7 +411,6 @@ export default function UniversalAssetResizer() {
                   />
                 </div>
 
-                {/* Vertical Shift */}
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#b5bac1", marginBottom: "8px" }}>
                     <span>Vertical Shift</span>
@@ -448,7 +427,6 @@ export default function UniversalAssetResizer() {
                   />
                 </div>
 
-                {/* Extended Background Toggle & Blur Controls */}
                 <div style={{ gridColumn: "1 / -1", borderTop: "1px solid #2b2d31", paddingTop: "16px", marginTop: "4px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                     <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#ffffff", fontWeight: "600", cursor: "pointer" }}>
@@ -502,7 +480,6 @@ export default function UniversalAssetResizer() {
               </div>
             )}
 
-            {/* Action Render Button */}
             {file && (
               <button
                 onClick={processImage}
@@ -529,7 +506,6 @@ export default function UniversalAssetResizer() {
               </button>
             )}
 
-            {/* Export Download Section */}
             {processedUrl && (
               <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>

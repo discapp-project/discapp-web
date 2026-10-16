@@ -8,7 +8,6 @@ export default function WebhookJsonFormatter() {
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Advanced heuristic repair function for malformed / broken JSON inputs
   const repairAndFormatJson = (raw: string) => {
     if (!raw.trim()) {
       setFormattedOutput("");
@@ -17,25 +16,18 @@ export default function WebhookJsonFormatter() {
     }
 
     try {
-      // 1. Try standard JSON parse first
       const parsed = JSON.parse(raw);
       setFormattedOutput(JSON.stringify(parsed, null, 2));
       setErrorStatus(null);
       return;
     } catch (err: any) {
-      // 2. Comprehensive heuristics to fix common and complex JSON syntax errors:
       let fixed = raw
-        // Replace single quotes with double quotes
         .replace(/'([^']*)'/g, '"$1"')
-        // Quote unquoted object keys (e.g. key: "value" -> "key": "value")
         .replace(/([{,]\s*)([a-zA-Z0-9_$-]+)(\s*:\s*)/g, '$1"$2"$3')
-        // Remove trailing commas in arrays and objects
         .replace(/,\s*([}\]])/g, "$1")
-        // Fix unquoted boolean or null values typed as capital or lowercase variations
         .replace(/:\s*true/gi, ":true")
         .replace(/:\s*false/gi, ":false")
         .replace(/:\s*null/gi, ":null")
-        // Clean up markdown code block wrappers if pasted with them
         .replace(/^```json\s*/i, "")
         .replace(/^```\s*/i, "")
         .replace(/\s*```$/, "");
@@ -75,7 +67,6 @@ export default function WebhookJsonFormatter() {
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "28px" }}>
         
-        {/* Header Section */}
         <div style={{ textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             Webhook JSON Formatter
@@ -85,7 +76,6 @@ export default function WebhookJsonFormatter() {
           </p>
         </div>
 
-        {/* Status / Error Banner */}
         {errorStatus && (
           <div
             style={{
@@ -102,10 +92,8 @@ export default function WebhookJsonFormatter() {
           </div>
         )}
 
-        {/* Dual Pane Layout (Input & Output) */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start" }}>
           
-          {/* LEFT PANE: Raw Input */}
           <div
             style={{
               backgroundColor: "#141518",
@@ -160,7 +148,6 @@ export default function WebhookJsonFormatter() {
             />
           </div>
 
-          {/* RIGHT PANE: Formatted Output & Copy */}
           <div
             style={{
               backgroundColor: "#141518",

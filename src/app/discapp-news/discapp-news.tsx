@@ -8,16 +8,13 @@ import { newsletterIndex, NewsletterMeta } from '../data/newsletters';
 function renderSimpleMarkdown(text: string) {
   if (!text) return null;
 
-  // Normalize line endings (\r\n -> \n)
   const normalized = text.replace(/\r\n/g, '\n').trim();
 
-  // Split content by double newlines into block chunks
   const blocks = normalized.split(/\n{2,}/);
 
   return blocks.map((block, idx) => {
     const trimmed = block.trim();
 
-    // Headers
     if (trimmed.startsWith('### ')) {
       return (
         <h3 key={idx} style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: '24px', marginBottom: '12px' }}>
@@ -42,7 +39,6 @@ function renderSimpleMarkdown(text: string) {
       );
     }
 
-    // Unordered Lists (* or -)
     if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
       const items = trimmed.split(/\n(?=[\*\-]\s)/);
       return (
@@ -62,7 +58,6 @@ function renderSimpleMarkdown(text: string) {
       );
     }
 
-    // Paragraphs (with bold formatting and line break handling)
     const lines = trimmed.split('\n');
     return (
       <p key={idx} style={{ fontSize: '14px', lineHeight: '1.6', color: '#dbdee1', marginBottom: '16px' }}>

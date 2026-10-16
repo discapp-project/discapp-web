@@ -69,6 +69,12 @@ const EMOJI_MAP: Record<string, string[]> = {
   x: ["❌"],
 };
 
+const MULTI_CHARACTER_MAP: Record<string, string[]> = {
+  a: ["/\\"],
+  m: ["rn"],
+  w: ["vv"],
+};
+
 const UNICODE_MAP: Record<string, string[]> = {
   a: ["а", "α"],
   e: ["е", "є"],
@@ -128,25 +134,25 @@ export default function AutomodRegexCreator() {
         UNICODE_MAP[char].forEach((v) => variants.add(v));
       }
 
+      if (settings.multiCharacter && MULTI_CHARACTER_MAP[char]) {
+        MULTI_CHARACTER_MAP[char].forEach((v) => variants.add(v));
+      }
+
       const escapedVariants = Array.from(variants).map((v) =>
         v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
       );
 
       let token =
         escapedVariants.length > 1
-          ? `(${escapedVariants.join("|")})`
+          ? `(?:${escapedVariants.join("|")})`
           : escapedVariants[0];
-
-      if (settings.letterSpam) {
-        token += "+";
-      }
 
       if (settings.characterDeduplication) {
         token += "*";
-      }
-
-      if (settings.vowellessVariants && "aeiou".includes(char)) {
+      } else if (settings.vowellessVariants && "aeiou".includes(char)) {
         token += "?";
+      } else if (settings.letterSpam) {
+        token += "+";
       }
 
       tokens.push(token);
@@ -182,7 +188,6 @@ export default function AutomodRegexCreator() {
     >
       <div style={{ maxWidth: "1000px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
         
-        {/* Header Section */}
         <div style={{ marginBottom: "8px", textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             AutoMod Regex Builder
@@ -192,7 +197,6 @@ export default function AutomodRegexCreator() {
           </p>
         </div>
 
-        {/* Target Expression Input */}
         <div
           style={{
             backgroundColor: "#141518",
@@ -230,7 +234,6 @@ export default function AutomodRegexCreator() {
           />
         </div>
 
-        {/* Advanced Evasion & Security Flags */}
         <div
           style={{
             backgroundColor: "#141518",
@@ -275,61 +278,61 @@ export default function AutomodRegexCreator() {
               {
                 id: "numberVariants",
                 title: "Numeric Swaps",
-                desc: "Blocks numeric substitutions (e.g., h3llo)",
+                desc: "Blocks numeric substitutions (e.g., h3llo).",
               },
               {
                 id: "symbolVariants",
                 title: "Symbol Obfuscation",
-                desc: "Blocks special character swaps (e.g., h3!!o)",
+                desc: "Blocks special character swaps (e.g., h3!!o).",
               },
               {
                 id: "letterVariants",
                 title: "Visual Letter Swaps",
-                desc: "Intercepts similar character lookalikes",
+                desc: "Intercepts similar character lookalikes.",
               },
               {
                 id: "emojiVariants",
                 title: "Emoji Injection",
-                desc: "Blocks regional indicator emoji splits",
+                desc: "Blocks supported emoji substitutions.",
               },
               {
                 id: "unicodeVariants",
                 title: "Unicode Homoglyphs",
-                desc: "Catches international character bypasses",
+                desc: "Catches international character bypasses.",
               },
               {
                 id: "letterSpam",
                 title: "Repeated Character Spam",
-                desc: "Flags extended character repetition (e.g., heeeello)",
+                desc: "Flags extended character repetition (e.g., heeeello).",
               },
               {
                 id: "multiCharacter",
                 title: "Multi-Character Splitting",
-                desc: "Prevents composite character substitutions",
+                desc: "Prevents composite character substitutions.",
               },
               {
                 id: "extraWhitespace",
                 title: "Whitespace Spacing",
-                desc: "Catches spaced out letters",
-                warning: "Potential false positives risk",
+                desc: "Catches spaced out letters.",
+                warning: "Potential false positives risk.",
               },
               {
                 id: "vowellessVariants",
                 title: "Vowel Stripping",
-                desc: "Intercepts vowel-less variations",
-                warning: "Potential false positives risk",
+                desc: "Intercepts vowel-less variations.",
+                warning: "Potential false positives risk.",
               },
               {
                 id: "characterDeduplication",
                 title: "Deduplication Guards",
-                desc: "Prevents compressed contraction bypasses",
-                warning: "Risk for short keywords",
+                desc: "Prevents compressed contraction bypasses.",
+                warning: "Risk for short keywords.",
               },
               {
                 id: "partialMatches",
                 title: "Sub-String Anchoring",
-                desc: "Enables loose substring scanning inside sentences",
-                warning: "Risk for short keywords",
+                desc: "Enables loose substring scanning inside sentences.",
+                warning: "Risk for short keywords.",
               },
             ].map((option) => {
               const isChecked = settings[option.id as keyof SettingsState];
@@ -337,7 +340,7 @@ export default function AutomodRegexCreator() {
               return (
                 <div
                   key={option.id}
-                  onClick={() => toggleSetting(option.id as keyof SettingsState)}
+
                   style={{
                     display: "flex",
                     flexDirection: "column",
@@ -350,7 +353,7 @@ export default function AutomodRegexCreator() {
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={() => {}}
+                      onChange={() => toggleSetting(option.id as keyof SettingsState)}
                       style={{
                         accentColor: "#acf6c8",
                         cursor: "pointer",
@@ -374,7 +377,6 @@ export default function AutomodRegexCreator() {
           </div>
         </div>
 
-        {/* Export & Payload Generation */}
         <div
           style={{
             backgroundColor: "#141518",

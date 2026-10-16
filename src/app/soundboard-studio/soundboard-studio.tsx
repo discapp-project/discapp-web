@@ -170,10 +170,10 @@ export default function SoundboardConverter() {
       pos += 4;
     }
 
-    setUint32(0x46464952); // "RIFF"
+    setUint32(0x46464952); 
     setUint32(length - 8);
-    setUint32(0x45564157); // "WAVE"
-    setUint32(0x20746d66); // "fmt "
+    setUint32(0x45564157); 
+    setUint32(0x20746d66); 
     setUint32(16);
     setUint16(1);
     setUint16(numOfChan);
@@ -181,7 +181,7 @@ export default function SoundboardConverter() {
     setUint32(buffer.sampleRate * 2 * numOfChan);
     setUint16(numOfChan * 2);
     setUint16(16);
-    setUint32(0x61746164); // "data"
+    setUint32(0x61746164); 
     setUint32(length - pos - 4);
 
     for (i = 0; i < buffer.numberOfChannels; i++) {
@@ -216,7 +216,6 @@ export default function SoundboardConverter() {
     <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "sans-serif", padding: "40px 24px" }}>
       <div style={{ maxWidth: "896px", margin: "0 auto" }}>
         
-        {/* Title Block */}
         <div style={{ marginBottom: "28px" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", letterSpacing: "-0.025em", color: "#ffffff", marginBottom: "6px" }}>
             Soundboard Converter
@@ -226,7 +225,6 @@ export default function SoundboardConverter() {
           </p>
         </div>
 
-        {/* Upload Dropzone */}
         <div style={{ position: "relative", marginBottom: "20px" }}>
           <input
             type="file"
@@ -260,7 +258,6 @@ export default function SoundboardConverter() {
           </label>
         </div>
 
-        {/* Error Alert */}
         {errorMessage && (
           <div style={{ backgroundColor: "rgba(242, 63, 67, 0.1)", border: "1px solid #f23f43", borderRadius: "8px", padding: "12px 16px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px", color: "#f23f43", fontSize: "13px" }}>
             <AlertCircle style={{ width: "18px", height: "18px", flexShrink: 0 }} />
@@ -268,11 +265,9 @@ export default function SoundboardConverter() {
           </div>
         )}
 
-        {/* Editor Settings Container */}
         {audioBuffer && (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             
-            {/* Top Toolbar: Player + Duration Indicator */}
             <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
               <button
                 onClick={playPreview}
@@ -301,10 +296,8 @@ export default function SoundboardConverter() {
               </div>
             </div>
 
-            {/* Slider Controls Grid */}
             <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "20px" }}>
               
-              {/* Start Time Slider */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#b5bac1", marginBottom: "8px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Scissors style={{ width: "14px", height: "14px" }} /> Start Trim</span>
@@ -324,7 +317,6 @@ export default function SoundboardConverter() {
                 />
               </div>
 
-              {/* End Time Slider */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#b5bac1", marginBottom: "8px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Scissors style={{ width: "14px", height: "14px" }} /> End Trim</span>
@@ -344,7 +336,6 @@ export default function SoundboardConverter() {
                 />
               </div>
 
-              {/* Speed Multiplier */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#b5bac1", marginBottom: "8px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Gauge style={{ width: "14px", height: "14px" }} /> Speed Multiplier</span>
@@ -361,7 +352,6 @@ export default function SoundboardConverter() {
                 />
               </div>
 
-              {/* Volume Multiplier */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#b5bac1", marginBottom: "8px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Volume2 style={{ width: "14px", height: "14px" }} /> Volume Boost</span>
@@ -380,7 +370,6 @@ export default function SoundboardConverter() {
 
             </div>
 
-            {/* Action Render Button */}
             <button
               onClick={processAudio}
               disabled={isProcessing || isOverLimit}
@@ -409,7 +398,6 @@ export default function SoundboardConverter() {
           </div>
         )}
 
-        {/* Download Output Box */}
         {processedUrl && (
           <div style={{ marginTop: "20px", backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>

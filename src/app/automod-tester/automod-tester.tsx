@@ -16,7 +16,6 @@ interface AutoModRule {
 }
 
 export default function AutoModTester() {
-  // Pre-configured default rules simulating Discord's setup
   const [rules, setRules] = useState<AutoModRule[]>([
     {
       id: "rule_1",
@@ -51,13 +50,11 @@ export default function AutoModTester() {
   const [activeTab, setActiveTab] = useState<"simulator" | "rules">("simulator");
   const [selectedRuleId, setSelectedRuleId] = useState<string>(rules[0].id);
 
-  // New rule form state
   const [newRuleName, setNewRuleName] = useState<string>("Custom Regex Filter");
   const [newRuleType, setNewRuleType] = useState<"KEYWORD" | "REGEX">("REGEX");
   const [newRuleInput, setNewRuleInput] = useState<string>("(password|token|secret)");
   const [newRuleAction, setNewRuleAction] = useState<"BLOCK" | "TIMEOUT">("BLOCK");
 
-  // Run AutoMod Evaluation Engine
   const evaluateMessage = (message: string) => {
     if (!message.trim()) return { triggered: false, matches: [] };
 
@@ -66,17 +63,14 @@ export default function AutoModTester() {
     for (const rule of rules) {
       if (!rule.enabled) continue;
 
-      // Check Allowlist first
       const isAllowed = rule.allowList.some((allowed) => 
         message.toLowerCase().includes(allowed.toLowerCase())
       );
       if (isAllowed) continue;
 
-      // Evaluate Keyword Triggers
       if (rule.triggerType === "KEYWORD") {
         for (const kw of rule.keywords) {
           if (!kw.trim()) continue;
-          // Wildcard/substring keyword matching
           const regex = new RegExp(`\\b${kw.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, "i");
           if (regex.test(message) || message.toLowerCase().includes(kw.toLowerCase())) {
             triggeredMatches.push({
@@ -89,7 +83,6 @@ export default function AutoModTester() {
         }
       }
 
-      // Evaluate Regex Triggers
       if (rule.triggerType === "REGEX") {
         for (const pattern of rule.regexPatterns) {
           if (!pattern.trim()) continue;
@@ -104,7 +97,6 @@ export default function AutoModTester() {
               break;
             }
           } catch (e) {
-            // Invalid regex handled silently
           }
         }
       }
@@ -161,7 +153,6 @@ export default function AutoModTester() {
     >
       <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
         
-        {/* Header Section */}
         <div style={{ marginBottom: "28px", textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             Discord AutoMod Sandbox & Tester
@@ -171,7 +162,6 @@ export default function AutoModTester() {
           </p>
         </div>
 
-        {/* Navigation Tabs */}
         <div style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
           {[
             { id: "simulator", label: "🛡️ Live Sandbox Simulator" },
@@ -203,7 +193,6 @@ export default function AutoModTester() {
         {activeTab === "simulator" ? (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start" }}>
             
-            {/* LEFT: Test Input & Active Rules Overview */}
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               
               <div
@@ -266,7 +255,6 @@ export default function AutoModTester() {
                 </div>
               </div>
 
-              {/* Active Rules List summary */}
               <div
                 style={{
                   backgroundColor: "#141518",
@@ -315,7 +303,6 @@ export default function AutoModTester() {
 
             </div>
 
-            {/* RIGHT: Live Evaluation Result Banner */}
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               <div
                 style={{
@@ -392,7 +379,6 @@ export default function AutoModTester() {
                   )}
                 </div>
 
-                {/* Discord Chat Bubble Simulation */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "16px" }}>
                   <span style={{ fontSize: "11px", color: "#80848e", fontWeight: "600" }}>
                     Channel Preview Simulation:
@@ -417,10 +403,8 @@ export default function AutoModTester() {
 
           </div>
         ) : (
-          /* Manage & Create Rules Tab */
           <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             
-            {/* Create New Rule Form */}
             <div
               style={{
                 backgroundColor: "#141518",
@@ -546,7 +530,6 @@ export default function AutoModTester() {
               </form>
             </div>
 
-            {/* Existing Rules List */}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#ffffff" }}>
                 Configured Rules

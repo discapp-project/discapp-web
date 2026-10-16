@@ -19,12 +19,10 @@ export default function NotFound() {
       }}
     >
       <div style={{ maxWidth: '600px', width: '100%', textAlign: 'center' }}>
-        {/* Icon */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
           <Ghost size={32} style={{ color: '#9bf0be', marginRight: '8px' }} aria-hidden="true" />
         </div>
 
-        {/* Title */}
         <h1
           style={{
             fontSize: '24px',
@@ -37,7 +35,6 @@ export default function NotFound() {
           Page Not Found
         </h1>
 
-        {/* Humorous Description */}
         <p
           style={{
             color: '#80848e',
@@ -49,7 +46,6 @@ export default function NotFound() {
           The page you were looking for went missing...maybe the cats took it...idk man
         </p>
 
-        {/* Buttons */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <Link
             href="/"

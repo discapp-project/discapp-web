@@ -271,10 +271,8 @@ export default function DiscordMarkdownLibrary() {
     <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '24px 16px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
         
-        {/* Navigation & Header Section */}
         <div style={{ marginBottom: '16px' }}>
 
-          {/* Search Input */}
           <input
             type="text"
             value={searchQuery}
@@ -294,10 +292,8 @@ export default function DiscordMarkdownLibrary() {
           />
         </div>
 
-        {/* Minimalist Split View */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', alignItems: 'start' }}>
           
-          {/* List Sidebar */}
           <div style={{ backgroundColor: '#1c1d22', borderRadius: '6px', border: '1px solid #2b2d31', padding: '8px', maxHeight: '600px', overflowY: 'auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
               {filteredItems.map((item) => {
@@ -332,10 +328,8 @@ export default function DiscordMarkdownLibrary() {
             </div>
           </div>
 
-          {/* Preview Panel */}
           <div style={{ backgroundColor: '#1c1d22', borderRadius: '6px', border: '1px solid #2b2d31', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             
-            {/* Syntax Display & Copy Button */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
               <div style={{ backgroundColor: '#111214', border: '1px solid #2b2d31', borderRadius: '4px', padding: '8px 12px', fontFamily: 'Consolas, Monaco, monospace', fontSize: '13px', color: '#ffffff', flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                 {selectedItem.syntax}
@@ -358,7 +352,6 @@ export default function DiscordMarkdownLibrary() {
               </button>
             </div>
 
-            {/* Discord Chat Renders Preview */}
             <div style={{ backgroundColor: '#313338', borderRadius: '6px', padding: '12px', border: '1px solid #2b2d31', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#5865F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', color: '#ffffff', flexShrink: 0, fontSize: '13px' }}>
                 BP
@@ -380,7 +373,6 @@ export default function DiscordMarkdownLibrary() {
               </div>
             </div>
 
-            {/* Description & Usage Context Block */}
             <div style={{ backgroundColor: '#111214', border: '1px solid #2b2d31', borderRadius: '6px', padding: '12px' }}>
               <div style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff', marginBottom: '4px' }}>
                 {selectedItem.description}

@@ -107,7 +107,6 @@ export default function PermissionCalculator() {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close custom dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -150,7 +149,6 @@ export default function PermissionCalculator() {
     <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "sans-serif", padding: "40px 24px" }}>
       <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
         
-        {/* Title Header */}
         <div style={{ marginBottom: "28px" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", letterSpacing: "-0.025em", color: "#ffffff", marginBottom: "6px" }}>
             Permission Calculator
@@ -160,10 +158,8 @@ export default function PermissionCalculator() {
           </p>
         </div>
 
-        {/* Top Control Bar: Client ID & Custom Presets Dropdown */}
         <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "20px", marginBottom: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
           
-          {/* Client ID Input */}
           <div>
             <label style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", color: "#80848e", display: "block", marginBottom: "8px" }}>
               Client ID (Optional)
@@ -187,7 +183,6 @@ export default function PermissionCalculator() {
             />
           </div>
 
-          {/* Custom Presets Dropdown */}
           <div ref={dropdownRef} style={{ position: "relative" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <label style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", color: "#80848e" }}>
@@ -211,7 +206,6 @@ export default function PermissionCalculator() {
               )}
             </div>
 
-            {/* Dropdown Trigger */}
             <div
               onClick={() => setIsDropdownOpen((prev) => !prev)}
               style={{
@@ -237,7 +231,6 @@ export default function PermissionCalculator() {
               </span>
             </div>
 
-            {/* Custom Dropdown Menu */}
             {isDropdownOpen && (
               <div
                 style={{
@@ -303,7 +296,6 @@ export default function PermissionCalculator() {
 
         </div>
 
-        {/* Live Output Banner */}
         <div style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "20px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", color: "#80848e", marginBottom: "4px" }}>
@@ -349,7 +341,6 @@ export default function PermissionCalculator() {
           </div>
         </div>
 
-        {/* Categories Matrix */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
           {PERMISSION_CATEGORIES.map((cat) => (
             <div key={cat.name} style={{ backgroundColor: "#1e1f22", border: "1px solid #2b2d31", borderRadius: "8px", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>

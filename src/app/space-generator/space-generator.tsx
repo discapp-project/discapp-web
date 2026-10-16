@@ -33,7 +33,6 @@ export default function ZeroWidthSpaceInjector() {
 
   const outputText = generateModifiedText();
 
-  // Helper to render visible markers for invisible zero-width spaces without any glow
   const renderZWSView = (text: string) => {
     if (!text) return <span style={{ color: "#80848e" }}>No output generated...</span>;
     
@@ -78,7 +77,6 @@ export default function ZeroWidthSpaceInjector() {
     >
       <div style={{ maxWidth: "900px", margin: "0 auto" }}>
         
-        {/* Header Section */}
         <div style={{ marginBottom: "32px", textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             Zero-Width Space Generator
@@ -88,13 +86,10 @@ export default function ZeroWidthSpaceInjector() {
           </p>
         </div>
 
-        {/* Fresh Asymmetric Layout Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start" }}>
           
-          {/* LEFT COLUMN: Input & Controls */}
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             
-            {/* Input Card */}
             <div
               style={{
                 backgroundColor: "#141518",
@@ -128,7 +123,6 @@ export default function ZeroWidthSpaceInjector() {
               </div>
             </div>
 
-            {/* Injection Mode Card */}
             <div
               style={{
                 backgroundColor: "#141518",
@@ -204,7 +198,6 @@ export default function ZeroWidthSpaceInjector() {
 
           </div>
 
-          {/* RIGHT COLUMN: Output */}
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             
             <div
@@ -222,7 +215,6 @@ export default function ZeroWidthSpaceInjector() {
             >
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 
-                {/* Header with Show ZWS Toggle */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
                     Output
@@ -247,7 +239,6 @@ export default function ZeroWidthSpaceInjector() {
                   </button>
                 </div>
 
-                {/* Output Display Box with Visual ZWS Indicators */}
                 <div
                   style={{
                     backgroundColor: "#0b0c0e",
@@ -276,7 +267,6 @@ export default function ZeroWidthSpaceInjector() {
 
               </div>
 
-              {/* Action Button */}
               <button
                 type="button"
                 onClick={handleCopy}

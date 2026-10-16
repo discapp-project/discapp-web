@@ -4,7 +4,6 @@ import Link from "next/link";
 import BugReportButton from "./components/BugReportButton";
 import "./globals.css";
 
-// Interface for layout props
 interface RootLayoutProps {
   children: React.ReactNode;
 }
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Discapp | All In One Toolkit",
     description: "Get access to every tool on Discord as well as libraries to help make your life much easier!",
-    url: "https://netlify.app",
+    url: "https://discapp.org",
   },
 };
 

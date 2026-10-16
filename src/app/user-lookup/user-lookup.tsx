@@ -260,7 +260,6 @@ export default function DiscordUserLookup() {
 
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
-        {/* Page Header */}
         <header style={{ marginBottom: '24px' }}>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.3px' }}>
             Discord Profile Inspector
@@ -270,7 +269,6 @@ export default function DiscordUserLookup() {
           </p>
         </header>
 
-        {/* Top Input & Search Action Card */}
         <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', borderRadius: '6px', padding: '16px', marginBottom: '24px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', alignItems: 'end' }}>
             
@@ -299,7 +297,6 @@ export default function DiscordUserLookup() {
               />
             </div>
 
-            {/* CAPTCHA Widget Container */}
             <div style={{ overflowX: 'auto', display: 'flex', justifyContent: 'center' }}>
               {siteKey ? (
                 <HCaptcha
@@ -316,7 +313,6 @@ export default function DiscordUserLookup() {
               )}
             </div>
 
-            {/* Inspect Button */}
             <button
               onClick={fetchUserData}
               disabled={loading || !captchaToken}
@@ -352,10 +348,8 @@ export default function DiscordUserLookup() {
           )}
         </div>
 
-        {/* Main Content Workspace */}
         {userData ? (
           <div>
-            {/* Header Identity Snippet Card */}
             <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', borderRadius: '6px', padding: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <img
                 src={getAvatarUrl(userData.id, userData.avatar)}
@@ -394,7 +388,6 @@ export default function DiscordUserLookup() {
               </div>
             </div>
 
-            {/* Navigation Tabs Bar */}
             <div className="custom-scroll" style={{ display: 'flex', gap: '4px', borderBottom: '1px solid #1c1d22', marginBottom: '20px', overflowX: 'auto' }}>
               <button onClick={() => setActiveTab('overview')} className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}>
                 Overview & System Details
@@ -413,10 +406,8 @@ export default function DiscordUserLookup() {
               </button>
             </div>
 
-            {/* TAB 1: OVERVIEW & SYSTEM DETAILS */}
             {activeTab === 'overview' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Basic Attributes Grid */}
                 <div className="info-grid">
                   <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '14px', borderRadius: '6px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: '#8e9297', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Snowflake ID</span>
@@ -454,7 +445,6 @@ export default function DiscordUserLookup() {
                   </div>
                 </div>
 
-                {/* Flags Breakdown */}
                 <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                     Public Flags Bitmask (Value: {userData.public_flags ?? 0})
@@ -495,10 +485,8 @@ export default function DiscordUserLookup() {
               </div>
             )}
 
-            {/* TAB 2: COLLECTIBLES & COSMETICS */}
             {activeTab === 'cosmetics' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Banner & Accent Colors */}
                 <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                     Theme & Accent Properties
@@ -522,7 +510,6 @@ export default function DiscordUserLookup() {
                   </div>
                 </div>
 
-                {/* Avatar Decoration Preset */}
                 <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                     Avatar Decoration Data
@@ -545,7 +532,6 @@ export default function DiscordUserLookup() {
                   )}
                 </div>
 
-                {/* Nameplate Collectible */}
                 <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                     Nameplate Collectibles
@@ -585,7 +571,6 @@ export default function DiscordUserLookup() {
                   )}
                 </div>
 
-                {/* Display Name Styles */}
                 <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                     Display Name Styling Parameters
@@ -618,7 +603,6 @@ export default function DiscordUserLookup() {
               </div>
             )}
 
-            {/* TAB 3: CLAN & GUILD IDENTITY */}
             {activeTab === 'clan' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
@@ -660,7 +644,6 @@ export default function DiscordUserLookup() {
                   )}
                 </div>
 
-                {/* Primary Guild */}
                 {userData.primary_guild && (
                   <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
@@ -681,14 +664,12 @@ export default function DiscordUserLookup() {
               </div>
             )}
 
-            {/* TAB 4: RAW CDN URLS */}
             {activeTab === 'assets' && (
               <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                   Direct Asset Links
                 </span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {/* Avatar URL */}
                   <div style={{ backgroundColor: '#09090b', border: '1px solid #1c1d22', padding: '10px 12px', borderRadius: '4px' }}>
                     <span style={{ fontSize: '11px', color: '#8e9297', display: 'block', marginBottom: '2px' }}>Avatar CDN (1024px)</span>
                     <a href={getAvatarUrl(userData.id, userData.avatar)} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: '#38bdf8', wordBreak: 'break-all', textDecoration: 'none' }}>
@@ -696,7 +677,6 @@ export default function DiscordUserLookup() {
                     </a>
                   </div>
 
-                  {/* Banner URL */}
                   {getBannerUrl(userData.id, userData.banner) && (
                     <div style={{ backgroundColor: '#09090b', border: '1px solid #1c1d22', padding: '10px 12px', borderRadius: '4px' }}>
                       <span style={{ fontSize: '11px', color: '#8e9297', display: 'block', marginBottom: '2px' }}>Banner CDN (1024px)</span>
@@ -706,7 +686,6 @@ export default function DiscordUserLookup() {
                     </div>
                   )}
 
-                  {/* Nameplate URL */}
                   {userData.collectibles?.nameplate && getNameplateUrl(userData.collectibles.nameplate.asset) && (
                     <div style={{ backgroundColor: '#09090b', border: '1px solid #1c1d22', padding: '10px 12px', borderRadius: '4px' }}>
                       <span style={{ fontSize: '11px', color: '#8e9297', display: 'block', marginBottom: '2px' }}>Nameplate CDN Asset</span>
@@ -716,7 +695,6 @@ export default function DiscordUserLookup() {
                     </div>
                   )}
 
-                  {/* Clan Badge CDN */}
                   {userData.clan && getClanBadgeUrl(userData.clan.identity_guild_id, userData.clan.badge) && (
                     <div style={{ backgroundColor: '#09090b', border: '1px solid #1c1d22', padding: '10px 12px', borderRadius: '4px' }}>
                       <span style={{ fontSize: '11px', color: '#8e9297', display: 'block', marginBottom: '2px' }}>Clan Badge CDN</span>
@@ -729,7 +707,6 @@ export default function DiscordUserLookup() {
               </div>
             )}
 
-            {/* TAB 5: FULL RAW JSON */}
             {activeTab === 'json' && (
               <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', borderRadius: '6px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>

@@ -237,7 +237,6 @@ export default function DiscordServerLookup() {
 
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
-        {/* Page Header */}
         <header style={{ marginBottom: '24px' }}>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.3px' }}>
             Discord Server Inspector
@@ -247,7 +246,6 @@ export default function DiscordServerLookup() {
           </p>
         </header>
 
-        {/* Top Input & Search Action Card */}
         <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', borderRadius: '6px', padding: '16px', marginBottom: '24px' }}>
           <form onSubmit={(e) => { e.preventDefault(); fetchGuildData(); }} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'end' }}>
             <div>
@@ -274,7 +272,6 @@ export default function DiscordServerLookup() {
               />
             </div>
 
-            {/* Inspect Button */}
             <button
               type="submit"
               disabled={loading}
@@ -310,10 +307,8 @@ export default function DiscordServerLookup() {
           )}
         </div>
 
-        {/* Main Content Workspace */}
         {guildData ? (
           <div>
-            {/* Header Identity Snippet Card */}
             <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', borderRadius: '6px', padding: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <img
                 src={getIconUrl(guildId, getGuildIcon())}
@@ -349,7 +344,6 @@ export default function DiscordServerLookup() {
               </div>
             </div>
 
-            {/* Navigation Tabs Bar */}
             <div className="custom-scroll" style={{ display: 'flex', gap: '4px', borderBottom: '1px solid #1c1d22', marginBottom: '20px', overflowX: 'auto' }}>
               <button onClick={() => setActiveTab('overview')} className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}>
                 Overview & Metrics
@@ -368,7 +362,6 @@ export default function DiscordServerLookup() {
               </button>
             </div>
 
-            {/* TAB 1: OVERVIEW & METRICS */}
             {activeTab === 'overview' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="info-grid">
@@ -426,7 +419,6 @@ export default function DiscordServerLookup() {
                   </div>
                 </div>
 
-                {/* Welcome Screen Info */}
                 {guildData.welcome_screen && (
                   <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '8px' }}>
@@ -452,7 +444,6 @@ export default function DiscordServerLookup() {
               </div>
             )}
 
-            {/* TAB 2: GUILD FEATURES */}
             {activeTab === 'features' && (
               <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
@@ -472,10 +463,8 @@ export default function DiscordServerLookup() {
               </div>
             )}
 
-            {/* TAB 3: INVITE & INVITER DETAILS */}
             {activeTab === 'inviter' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Inviter User */}
                 <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                     Invite Creator Information
@@ -501,7 +490,6 @@ export default function DiscordServerLookup() {
                   )}
                 </div>
 
-                {/* Target Channel */}
                 {guildData.channel && (
                   <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
@@ -526,14 +514,12 @@ export default function DiscordServerLookup() {
               </div>
             )}
 
-            {/* TAB 4: RAW CDN URLS */}
             {activeTab === 'assets' && (
               <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', padding: '16px', borderRadius: '6px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', display: 'block', marginBottom: '12px' }}>
                   Direct Guild Asset CDN Links
                 </span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {/* Icon CDN */}
                   {getGuildIcon() && (
                     <div style={{ backgroundColor: '#09090b', border: '1px solid #1c1d22', padding: '10px 12px', borderRadius: '4px' }}>
                       <span style={{ fontSize: '11px', color: '#8e9297', display: 'block', marginBottom: '2px' }}>Icon CDN (1024px)</span>
@@ -543,7 +529,6 @@ export default function DiscordServerLookup() {
                     </div>
                   )}
 
-                  {/* Banner CDN */}
                   {getBannerUrl(guildId, getGuildBanner()) && (
                     <div style={{ backgroundColor: '#09090b', border: '1px solid #1c1d22', padding: '10px 12px', borderRadius: '4px' }}>
                       <span style={{ fontSize: '11px', color: '#8e9297', display: 'block', marginBottom: '2px' }}>Banner CDN (1024px)</span>
@@ -553,7 +538,6 @@ export default function DiscordServerLookup() {
                     </div>
                   )}
 
-                  {/* Splash CDN */}
                   {getSplashUrl(guildId, getGuildSplash()) && (
                     <div style={{ backgroundColor: '#09090b', border: '1px solid #1c1d22', padding: '10px 12px', borderRadius: '4px' }}>
                       <span style={{ fontSize: '11px', color: '#8e9297', display: 'block', marginBottom: '2px' }}>Invite Splash CDN (1024px)</span>
@@ -566,7 +550,6 @@ export default function DiscordServerLookup() {
               </div>
             )}
 
-            {/* TAB 5: FULL RAW JSON */}
             {activeTab === 'json' && (
               <div style={{ backgroundColor: '#121316', border: '1px solid #1c1d22', borderRadius: '6px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>

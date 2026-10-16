@@ -3,15 +3,12 @@
 import React, { useState } from "react";
 
 export default function RichPresenceBuilder() {
-  // Topbar navigation tab including Export
   const [activeTab, setActiveTab] = useState<"general" | "assets" | "timestamps" | "party" | "buttons" | "export">("general");
 
-  // Client Application ID and Library Selection
   const [clientId, setClientId] = useState<string>("YOUR_CLIENT_ID");
   const [appName, setAppName] = useState<string>("Discapp Utility Suite");
   const [libChoice, setLibChoice] = useState<"discord-rpc" | "discord-api-types" | "discord.py">("discord-rpc");
 
-  // Feature optional toggles
   const [showDetails, setShowDetails] = useState<boolean>(true);
   const [showState, setShowState] = useState<boolean>(false);
   const [showAssets, setShowAssets] = useState<boolean>(false);
@@ -19,7 +16,6 @@ export default function RichPresenceBuilder() {
   const [showParty, setShowParty] = useState<boolean>(false);
   const [showButtons, setShowButtons] = useState<boolean>(false);
 
-  // Field values
   const [details, setDetails] = useState<string>("Exploring Discapp Hub");
   const [state, setState] = useState<string>("In Developer Mode");
   const [largeImageKey, setLargeImageKey] = useState<string>("discapp_logo");
@@ -27,18 +23,15 @@ export default function RichPresenceBuilder() {
   const [smallImageKey, setSmallImageKey] = useState<string>("verified_badge");
   const [smallImageText, setSmallImageText] = useState<string>("Verified Developer");
   
-  // Timestamp options
   const [timestampMode, setTimestampMode] = useState<"elapsed" | "remaining">("elapsed");
   const [customElapsedHours, setCustomElapsedHours] = useState<number>(0);
   const [customElapsedMinutes, setCustomElapsedMinutes] = useState<number>(25);
   const [customRemainingMinutes, setCustomRemainingMinutes] = useState<number>(10);
 
-  // Party options
   const [partyId, setPartyId] = useState<string>("party_123");
   const [partySize, setPartySize] = useState<number>(1);
   const [partyMax, setPartyMax] = useState<number>(5);
 
-  // Button options
   const [button1Label, setButton1Label] = useState<string>("GitHub Repo");
   const [button1Url, setButton1Url] = useState<string>("https://github.com");
   const [button2Label, setButton2Label] = useState<string>("Website");
@@ -46,7 +39,6 @@ export default function RichPresenceBuilder() {
 
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Generate Modern Asynchronous Node.js / TypeScript Code with Lifecycle & Reconnection
   const generateNodeCode = () => {
     let activityObj = `{`;
     if (showDetails && details) activityObj += `details:"${details}",`;
@@ -120,13 +112,10 @@ console.error('Login failed, attempting reconnection in 5s...',err);
 setTimeout(()=>client.login({clientId}),5000);
 });`;
     } else {
-      // Modern discord-api-types / custom WebSocket IPC approach
       return `const{WebSocket}=require('ws');
 const clientId='${id}';
-// Modern minimal WebSocket IPC wrapper for Discord Rich Presence
 async function initRPC(){
 console.log('Initializing modern Discord RPC client for ID:',clientId);
-// Reconnection loop & lifecycle handlers
 let active=true;
 process.on('SIGINT',async()=>{active=false;process.exit(0);});
 process.on('SIGTERM',async()=>{active=false;process.exit(0);});
@@ -135,7 +124,6 @@ initRPC();`;
     }
   };
 
-  // Generate Discord.py Code with Lifecycle handlers
   const generatePythonCode = () => {
     const id = clientId || "YOUR_CLIENT_ID";
     let updateArgs = ``;
@@ -233,7 +221,6 @@ while True:
     >
       <div style={{ maxWidth: "1250px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "28px" }}>
         
-        {/* Header Section */}
         <div style={{ textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
             Rich Presence (RPC) State Builder
@@ -243,7 +230,6 @@ while True:
           </p>
         </div>
 
-        {/* Topbar Tab Navigation */}
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", borderBottom: "1px solid #232428", paddingBottom: "16px" }}>
           {[
             { id: "general", label: "General" },
@@ -277,20 +263,16 @@ while True:
           })}
         </div>
 
-        {/* Workspace Grid */}
         <div style={{ display: "grid", gridTemplateColumns: activeTab === "export" ? "1fr" : "1.25fr 1fr", gap: "24px", alignItems: "start" }}>
           
-          {/* LEFT COLUMN: Configuration Panel */}
           <div style={{ backgroundColor: "#141518", border: "1px solid #232428", borderRadius: "12px", padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
             
-            {/* GENERAL TAB */}
             {activeTab === "general" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#ffffff", margin: 0 }}>
                   General & Application Settings
                 </h3>
 
-                {/* Application Name / ID */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                     <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>Application Name</label>
@@ -314,7 +296,6 @@ while True:
                   </div>
                 </div>
 
-                {/* Details */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", borderTop: "1px solid #232428", paddingTop: "16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <label style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
@@ -336,7 +317,6 @@ while True:
                   )}
                 </div>
 
-                {/* State */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", borderTop: "1px solid #232428", paddingTop: "16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <label style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
@@ -360,7 +340,6 @@ while True:
               </div>
             )}
 
-            {/* ASSETS TAB */}
             {activeTab === "assets" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -402,7 +381,6 @@ while True:
               </div>
             )}
 
-            {/* TIMESTAMPS TAB */}
             {activeTab === "timestamps" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -469,7 +447,6 @@ while True:
               </div>
             )}
 
-            {/* PARTY TAB */}
             {activeTab === "party" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
