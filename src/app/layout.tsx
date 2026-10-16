@@ -35,6 +35,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
             </div>
           </nav>
           {children}
+          <footer className="global-footer">
+            <nav className="global-footer-links" aria-label="Footer">
+              <a href="mailto:support@discapp.org">support@discapp.org</a>
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/terms-of-use">Terms of Use</Link>
+            </nav>
+            <p className="global-footer-disclaimer">
+              Discapp is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Discord Inc.
+            </p>
+          </footer>
         </div>
       </body>
     </html>

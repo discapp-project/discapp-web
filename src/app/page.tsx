@@ -259,9 +259,6 @@ export default function Home() {
         </div>
       </section>
 
-      <footer style={{ marginTop: '48px', paddingTop: '20px', color: '#80848e', fontSize: '12px', textAlign: 'center', lineHeight: '1.5' }}>
-        Discapp is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Discord Inc.
-      </footer>
     </main>
   );
 }

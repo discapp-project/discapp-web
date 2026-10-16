@@ -32,9 +32,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 ::selection { color: #111214; background: var(--accent); }
 
-.app-shell { min-height: 100vh; }
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
 .topbar {
   height: 56px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,6 +46,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .topbar-actions { display: flex; align-items: center; gap: 16px; }
 .topbar-link { color: var(--muted); text-decoration: none; font-size: 12px; }
 .topbar-link:hover, .brand:hover { color: white; }
+.global-footer {
+  margin-top: auto;
+  padding: 24px max(24px, calc((100vw - 1040px) / 2));
+  color: white;
+  background: #000;
+}
+.global-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 24px;
+}
+.global-footer-links a { color: white; font-size: 14px; text-decoration: none; }
+.global-footer-links a:hover { text-decoration: underline; }
+.global-footer-disclaimer {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, .78);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
 .bug-report-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; padding: 0; color: var(--muted); background: transparent; font-size: 12px; cursor: pointer; }
 .bug-report-trigger:hover { color: white; }
 .bug-report-dialog { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); width: min(480px, calc(100% - 28px)); max-height: min(90vh, 760px); overflow-y: auto; margin: 0; border: 1px solid var(--line-strong); border-radius: 7px; padding: 22px; color: var(--text); background: var(--surface); }
@@ -344,6 +366,9 @@ a.preview-embed-title:hover { text-decoration: underline; }
 @media (max-width: 600px) {
   .topbar { height: 52px; padding: 0 17px; }
   .topbar-actions { gap: 9px; }
+  .global-footer { padding: 20px 17px; }
+  .global-footer-links { gap: 10px 18px; }
+  .global-footer-disclaimer { font-size: 12px; }
   .bug-report-trigger { gap: 5px; font-size: 10px; }
   .bug-report-dialog { padding: 18px; }
   .page-wrap { width: calc(100% - 34px); margin-top: 36px; }
