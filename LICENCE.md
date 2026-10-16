@@ -1,4 +1,4 @@
-Copyright (c) 2026 SoulDevOfficial / Discapp. All Rights Reserved.
+Copyright © 2026 SoulDevOfficial / Discapp. All Rights Reserved.
 
 This repository's source code is publicly visible for educational, audit, and direct contribution purposes only.
 
