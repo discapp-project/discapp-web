@@ -428,8 +428,10 @@ export default function AutomodRegexCreator() {
               {generatedRegex || <span style={{ color: "#80848e" }}>Configure expression above...</span>}
             </div>
           </div>
+            <p style={{ color: '#bcbec2', fontSize: '14px', marginTop: '16px' }}>
+              Say thanks! This tool was contributed by TreeBen77! Find his amazing work <a href="https://treeben77.github.io/automod-regex-generator" target="_blank" rel="noopener noreferrer" style={{ color: '#bcbec2', textDecoration: 'underline', fontWeight: 'bold' }}>here</a>! 🌲
+            </p>
         </div>
-
       </div>
     </div>
   );
