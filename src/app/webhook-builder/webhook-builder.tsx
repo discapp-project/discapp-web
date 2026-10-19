@@ -1235,7 +1235,7 @@ export default function DiscordStudioWorkspace() {
                   <textarea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder="Message text (Discord Markdown supported)..."
+                    placeholder="Leave blank to only send embeds"
                     rows={2}
                     maxLength={4000}
                     style={{
