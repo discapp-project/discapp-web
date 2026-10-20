@@ -90,7 +90,7 @@ const FONT_TRANSFORMS: FontTransform[] = [
         a: "𝒶", b: "𝒷", c: "𝒸", d: "𝒹", e: "𝑒", f: "𝒻", g: "𝑔", h: "𝒽",
         i: "𝒾", j: "𝒿", k: "𝓀", l: "𝓁", m: "𝓂", n: "𝓃", o: "𝑜", p: "𝓅",
         q: "𝓆", r: "𝓇", s: "𝓈", t: "𝓉", u: "𝓊", v: "𝓋", w: "𝓌", x: "𝓍",
-        y: "𝓎", z: "𝓏", A: "𝒜", B: "ℬ", C: "𝒞", D: "𝒟", E: "ℰ", F: "ℱ",
+        y: "𝓎", z: "𝒛", A: "𝒜", B: "ℬ", C: "𝒞", D: "𝒟", E: "ℰ", F: "ℱ",
         G: "𝒢", H: "ℋ", I: "ℐ", J: "𝒥", K: "𝒦", L: "ℒ", M: "ℳ", N: "𝒩",
         O: "𝒪", P: "𝒫", Q: "𝒬", R: "ℛ", S: "𝒮", T: "𝒯", U: "𝒰", V: "𝒱",
         W: "𝒲", X: "𝒳", Y: "𝒴", Z: "ℤ"
@@ -111,10 +111,10 @@ const FONT_TRANSFORMS: FontTransform[] = [
     transform: (text) => {
       const map: Record<string, string> = {
         a: "𝔞", b: "𝔟", c: "𝔠", d: "𝔡", e: "𝔢", f: "𝔣", g: "𝔤", h: "𝔥",
-        i: "𝔦", j: "𝔧", k: "𝔨", l: "𝔩", m: "𝔪", n: "𝔞", o: "𝔬", p: "𝔟",
+        i: "𝔦", j: "𝔧", k: "𝔨", l: "𝔩", m: "𝔪", n: "𝔫", o: "𝔬", p: "𝔭",
         q: "𝔮", r: "𝔯", s: "𝔰", t: "𝔱", u: "𝔲", v: "𝔳", w: "𝔴", x: "𝔵",
         y: "𝔶", z: "𝔷", A: "𝔄", B: "𝔅", C: "ℭ", D: "𝔇", E: "𝔈", F: "𝔉",
-        G: "𝔤", H: "ℌ", I: "ℑ", J: "𝔍", K: "𝔎", L: "𝔏", M: "𝔐", N: "𝔑",
+        G: "𝔊", H: "ℌ", I: "ℑ", J: "𝔍", K: "𝔎", L: "𝔏", M: "𝔐", N: "𝔑",
         O: "𝔒", P: "𝔓", Q: "𝔔", R: "ℜ", S: "𝔖", T: "𝔗", U: "𝔘", V: "𝔙",
         W: "𝔚", X: "𝔛", Y: "𝔜", Z: "ℨ"
       };
@@ -263,10 +263,33 @@ const FONT_TRANSFORMS: FontTransform[] = [
   {
     transform: (text) => `꧁ ${text} ꧂`,
   },
+  {
+    transform: (text) => {
+      const above = ["\u030d", "\u030e", "\u0304", "\u0307", "\u0308", "\u0310", "\u0312", "\u0313", "\u0314", "\u0315", "\u031a", "\u031b", "\u0340", "\u0341", "\u0358", "\u0360", "\u0361"];
+      const middle = ["\u0315", "\u031b", "\u0334", "\u0335", "\u0337", "\u0338", "\u0339", "\u033a", "\u033b", "\u033c", "\u0345", "\u0362"];
+      const below = ["\u0316", "\u0317", "\u0318", "\u0319", "\u031c", "\u031d", "\u031e", "\u031f", "\u0320", "\u0324", "\u0325", "\u0326", "\u0327", "\u0328", "\u0329", "\u032a", "\u032b", "\u032c", "\u032d", "\u032e", "\u032f", "\u0330", "\u0331", "\u0332", "\u0333", "\u0339", "\u033a", "\u033b", "\u033c", "\u0347", "\u0348", "\u0349", "\u034d", "\u034e", "\u0353", "\u0354", "\u0355", "\u0356", "\u0359", "\u035a", "\u035b", "\u035c", "\u035d", "\u035e", "\u035f", "\u0360", "\u0362", "\u0363", "\u0364", "\u0365", "\u0366", "\u0367", "\u0368", "\u0369", "\u036a", "\u036b", "\u036c", "\u036d", "\u036e", "\u036f"];
+      
+      const getRandomChar = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+      
+      return text.split("").map((c) => {
+        if (c.trim() === "") return c;
+        let res = c;
+        const numAbove = Math.floor(Math.random() * 3) + 1;
+        const numMiddle = Math.floor(Math.random() * 2);
+        const numBelow = Math.floor(Math.random() * 3) + 1;
+        
+        for (let i = 0; i < numAbove; i++) res += getRandomChar(above);
+        for (let i = 0; i < numMiddle; i++) res += getRandomChar(middle);
+        for (let i = 0; i < numBelow; i++) res += getRandomChar(below);
+        
+        return res;
+      }).join("");
+    },
+  },
 ];
 
 export default function DiscordFontGenerator() {
-  const [username, setUsername] = useState<string>("CoolNameHere");
+  const [username, setUsername] = useState<string>("");
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleCopy = (styledText: string, index: number) => {
