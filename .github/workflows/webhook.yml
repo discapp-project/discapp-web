@@ -1,0 +1,66 @@
+name: Discord Notifications
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    types: [opened, reopened, closed]
+  star:
+    types: [created]
+
+jobs:
+  notify-push:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Commit Embed
+        uses: sarisia/webhooks-discord@v1
+        with:
+          webhook: ${{ secrets.WEBHOOK }}
+          title: ${{ github.event.head_commit.message }}
+          description: |
+            **Repository:** [${{ github.repository }}](https://github.com/${{ github.repository }})
+            **Branch:** `${{ github.ref_name }}`
+            **Author:** [${{ github.actor }}](https://github.com/${{ github.actor }})
+            
+            [View Commit](${{ github.event.head_commit.url }})
+          color: 0x5865F2
+          username: "GitHub Activity"
+          avatar_url: ${{ github.event.sender.avatar_url }}
+
+  notify-star:
+    if: github.event_name == 'star'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Star Embed
+        uses: sarisia/webhooks-discord@v1
+        with:
+          webhook: ${{ secrets.WEBHOOK }}
+          title: "⭐ A new star was added!"
+          description: |
+            [**${{ github.actor }}**](https://github.com/${{ github.actor }}) just starred [**${{ github.repository }}**](https://github.com/${{ github.repository }})!
+            
+            Total Stars: **${{ github.event.repository.stargazers_count }}**
+          color: 0x5865F2
+          username: "GitHub Activity"
+          avatar_url: ${{ github.event.sender.avatar_url }}
+
+  notify-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Pull Request Embed
+        uses: sarisia/webhooks-discord@v1
+        with:
+          webhook: ${{ secrets.WEBHOOK }}
+          title: "A new pull request has been ${{ github.event.action }}!"
+          description: |
+            **Title:** ${{ github.event.pull_request.title }}
+            **Author:** [${{ github.actor }}](https://github.com/${{ github.actor }})
+            
+            ${{ github.event.pull_request.body != '' && github.event.pull_request.body || '*No description provided.*' }}
+            
+            [View Pull Request](${{ github.event.pull_request.html_url }})
+          color: 0x5865F2
+          username: "GitHub Activity"
+          avatar_url: ${{ github.event.sender.avatar_url }}
