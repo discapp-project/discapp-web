@@ -14,53 +14,91 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Commit Embed
-        uses: sarisia/webhooks-discord@v1
-        with:
-          webhook: ${{ secrets.WEBHOOK }}
-          title: ${{ github.event.head_commit.message }}
-          description: |
-            **Repository:** [${{ github.repository }}](https://github.com/${{ github.repository }})
-            **Branch:** `${{ github.ref_name }}`
-            **Author:** [${{ github.actor }}](https://github.com/${{ github.actor }})
-            
-            [View Commit](${{ github.event.head_commit.url }})
-          color: 0x5865F2
-          username: "GitHub Activity"
-          avatar_url: ${{ github.event.sender.avatar_url }}
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          AVATAR: ${{ github.event.sender.avatar_url }}
+        run: |
+          jq -n \
+            --arg username "GitHub Activity" \
+            --arg avatar_url "$AVATAR" \
+            --arg title "$COMMIT_MSG" \
+            --arg repo "$REPO" \
+            --arg branch "$BRANCH" \
+            --arg actor "$ACTOR" \
+            --arg commit_url "$COMMIT_URL" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              embeds: [{
+                title: $title,
+                description: ("**Repository:** [" + $repo + "](https://github.com/" + $repo + ")\n**Branch:** `" + $branch + "`\n**Author:** [" + $actor + "](https://github.com/" + $actor + ")\n\n[View Commit](" + $commit_url + ")"),
+                color: 5793266
+              }]
+            }' | curl -H "Content-Type: application/json" -d @- "$WEBHOOK_URL"
 
   notify-star:
     if: github.event_name == 'watch'
     runs-on: ubuntu-latest
     steps:
       - name: Send Star Embed
-        uses: sarisia/webhooks-discord@v1
-        with:
-          webhook: ${{ secrets.WEBHOOK }}
-          title: "⭐ A new star was added!"
-          description: |
-            [**${{ github.actor }}**](https://github.com/${{ github.actor }}) just starred [**${{ github.repository }}**](https://github.com/${{ github.repository }})!
-            
-            Total Stars: **${{ github.event.repository.stargazers_count }}**
-          color: 0x5865F2
-          username: "GitHub Activity"
-          avatar_url: ${{ github.event.sender.avatar_url }}
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          AVATAR: ${{ github.event.sender.avatar_url }}
+          STARS: ${{ github.event.repository.stargazers_count }}
+        run: |
+          jq -n \
+            --arg username "GitHub Activity" \
+            --arg avatar_url "$AVATAR" \
+            --arg title "⭐ A new star was added!" \
+            --arg repo "$REPO" \
+            --arg actor "$ACTOR" \
+            --arg stars "$STARS" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              embeds: [{
+                title: $title,
+                description: ("[" + $actor + "](https://github.com/" + $actor + ") just starred [" + $repo + "](https://github.com/" + $repo + ")!\n\nTotal Stars: **" + $stars + "**"),
+                color: 5793266
+              }]
+            }' | curl -H "Content-Type: application/json" -d @- "$WEBHOOK_URL"
 
   notify-pr:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Send Pull Request Embed
-        uses: sarisia/webhooks-discord@v1
-        with:
-          webhook: ${{ secrets.WEBHOOK }}
-          title: "A new pull request has been ${{ github.event.action }}!"
-          description: |
-            **Title:** ${{ github.event.pull_request.title }}
-            **Author:** [${{ github.actor }}](https://github.com/${{ github.actor }})
-            
-            ${{ github.event.pull_request.body != '' && github.event.pull_request.body || '*No description provided.*' }}
-            
-            [View Pull Request](${{ github.event.pull_request.html_url }})
-          color: 0x5865F2
-          username: "GitHub Activity"
-          avatar_url: ${{ github.event.sender.avatar_url }}
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK }}
+          PR_ACTION: ${{ github.event.action }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
+          AVATAR: ${{ github.event.sender.avatar_url }}
+        run: |
+          BODY="${PR_BODY:-*No description provided.*}"
+          jq -n \
+            --arg username "GitHub Activity" \
+            --arg avatar_url "$AVATAR" \
+            --arg title "A new pull request has been $PR_ACTION!" \
+            --arg pr_title "$PR_TITLE" \
+            --arg actor "$ACTOR" \
+            --arg pr_body "$BODY" \
+            --arg pr_url "$PR_URL" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              embeds: [{
+                title: $title,
+                description: ("**Title:** " + $pr_title + "\n**Author:** [" + $actor + "](https://github.com/" + $actor + ")\n\n" + $pr_body + "\n\n[View Pull Request](" + $pr_url + ")"),
+                color: 5793266
+              }]
+            }' | curl -H "Content-Type: application/json" -d @- "$WEBHOOK_URL"
