@@ -7,6 +7,7 @@ on:
     types: [opened, reopened, closed]
   watch:
     types: [started]
+  fork:
 
 jobs:
   notify-push:
@@ -36,7 +37,7 @@ jobs:
               avatar_url: $avatar_url,
               embeds: [{
                 title: $title,
-                description: ("**Repository:** [" + $repo + "](https://github.com/" + $repo + ")\n**Branch:** `" + $branch + "`\n**Author:** [" + $actor + "](https://github.com/" + $actor + ")\n\n[View Commit](" + $commit_url + ")"),
+                description: ("Repository: [" + $repo + "](https://github.com/" + $repo + ")\nBranch: `" + $branch + "`\nAuthor: [" + $actor + "](https://github.com/" + $actor + ")\n\n[View Commit](" + $commit_url + ")"),
                 color: 5793266
               }]
             }' | curl -H "Content-Type: application/json" -d @- "$WEBHOOK_URL"
@@ -66,6 +67,34 @@ jobs:
               embeds: [{
                 title: $title,
                 description: ("[" + $actor + "](https://github.com/" + $actor + ") just starred [" + $repo + "](https://github.com/" + $repo + ")!\n\nTotal Stars: **" + $stars + "**"),
+                color: 5793266
+              }]
+            }' | curl -H "Content-Type: application/json" -d @- "$WEBHOOK_URL"
+
+  notify-fork:
+    if: github.event_name == 'fork'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Fork Embed
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          AVATAR: ${{ github.event.sender.avatar_url }}
+          FORK_URL: ${{ github.event.veegee.html_url || github.event.fork.html_url }}
+        run: |
+          jq -n \
+            --arg username "GitHub Activity" \
+            --arg avatar_url "$AVATAR" \
+            --arg title "🍴 A new fork was created!" \
+            --arg repo "$REPO" \
+            --arg actor "$ACTOR" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              embeds: [{
+                title: $title,
+                description: ("[" + $actor + "](https://github.com/" + $actor + ") has forked [" + $repo + "](https://github.com/" + $repo + ")!"),
                 color: 5793266
               }]
             }' | curl -H "Content-Type: application/json" -d @- "$WEBHOOK_URL"
