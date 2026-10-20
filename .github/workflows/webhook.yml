@@ -25,7 +25,7 @@ jobs:
           AVATAR: ${{ github.event.sender.avatar_url }}
         run: |
           jq -n \
-            --arg username "GitHub Activity" \
+            --arg username "Github | discapp-web" \
             --arg avatar_url "$AVATAR" \
             --arg title "$COMMIT_MSG" \
             --arg repo "$REPO" \
@@ -55,7 +55,7 @@ jobs:
           STARS: ${{ github.event.repository.stargazers_count }}
         run: |
           jq -n \
-            --arg username "GitHub Activity" \
+            --arg username "Github | discapp-web" \
             --arg avatar_url "$AVATAR" \
             --arg title "⭐ A new star was added!" \
             --arg repo "$REPO" \
@@ -84,7 +84,7 @@ jobs:
           FORK_URL: ${{ github.event.veegee.html_url || github.event.fork.html_url }}
         run: |
           jq -n \
-            --arg username "GitHub Activity" \
+            --arg username "Github | discapp-web" \
             --arg avatar_url "$AVATAR" \
             --arg title "🍴 A new fork was created!" \
             --arg repo "$REPO" \
@@ -115,7 +115,7 @@ jobs:
         run: |
           BODY="${PR_BODY:-*No description provided.*}"
           jq -n \
-            --arg username "GitHub Activity" \
+            --arg username "Github | discapp-web" \
             --arg avatar_url "$AVATAR" \
             --arg title "A new pull request has been $PR_ACTION!" \
             --arg pr_title "$PR_TITLE" \
