@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Check,
@@ -95,6 +95,373 @@ interface DiscordWebhookPayload {
   components: DiscordComponent[];
 }
 
+type ImportedBuilderState = {
+  content: string;
+  username: string;
+  avatarUrl: string;
+  threadName: string;
+  appliedTags: string;
+  suppressEmbeds: boolean;
+  suppressNotifications: boolean;
+  linkButtons: LinkButton[];
+  textDisplays: { id: string; text: string }[];
+  mediaGallery: MediaGalleryItem[];
+  separators: SeparatorBlock[];
+  componentOrder: string[];
+  embeds: Embed[];
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function makeEmbed(): Embed {
+  return {
+    id: crypto.randomUUID(),
+    blockOrder: [],
+    separatorDivider: true,
+    separatorSpacing: 1,
+    fields: [],
+  };
+}
+
+function importEmbedComponent(component: Record<string, unknown>): Embed {
+  const embed = makeEmbed();
+  if (typeof component.accent_color === "number" && Number.isInteger(component.accent_color) && component.accent_color >= 0 && component.accent_color <= 0xffffff) {
+    embed.color = `#${component.accent_color.toString(16).padStart(6, "0")}`;
+  }
+  if (!Array.isArray(component.components)) throw new Error("A container must have a components array.");
+
+  const addBlock = (block: EmbedBlockType) => {
+    if (!embed.blockOrder.includes(block)) embed.blockOrder.push(block);
+  };
+  const addText = (text: string) => {
+    const paragraphs = text.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
+    const description: string[] = [];
+    for (const paragraph of paragraphs) {
+      const titleMatch = /^## (.+)$/.exec(paragraph);
+      const linkedTitleMatch = /^## \[(.+)\]\((https?:\/\/[^)]+)\)$/.exec(paragraph);
+      if (linkedTitleMatch || titleMatch) {
+        const match = linkedTitleMatch ?? titleMatch!;
+        embed.title = match[1];
+        if (linkedTitleMatch) embed.titleUrl = linkedTitleMatch[2];
+        addBlock("title");
+        continue;
+      }
+      const timestampMatch = /^-# <t:(\d+):f>$/.exec(paragraph);
+      if (timestampMatch) {
+        embed.timestamp = new Date(Number(timestampMatch[1]) * 1000).toISOString();
+        addBlock("timestamp");
+        continue;
+      }
+      const footerMatch = /^-# (.+)$/.exec(paragraph);
+      if (footerMatch) {
+        embed.footerText = footerMatch[1];
+        addBlock("footer");
+        continue;
+      }
+      const authorLinkMatch = /^\*\*\[(.+)\]\((https?:\/\/[^)]+)\)\*\*$/.exec(paragraph);
+      const authorMatch = /^\*\*(.+)\*\*$/.exec(paragraph);
+      if (authorLinkMatch || authorMatch) {
+        const match = authorLinkMatch ?? authorMatch!;
+        embed.authorName = match[1];
+        if (authorLinkMatch) embed.authorUrl = authorLinkMatch[2];
+        addBlock("author");
+        continue;
+      }
+      const fieldMatch = /^\*\*(.+)\*\*\n([\s\S]+)$/.exec(paragraph);
+      if (fieldMatch) {
+        embed.fields.push({ id: crypto.randomUUID(), name: fieldMatch[1], value: fieldMatch[2], inline: true });
+        addBlock("fields");
+        continue;
+      }
+      description.push(paragraph);
+    }
+    if (description.length) {
+      embed.description = [embed.description, ...description].filter(Boolean).join("\n\n");
+      addBlock("description");
+    }
+  };
+
+  for (const item of component.components) {
+    if (!isRecord(item) || typeof item.type !== "number") throw new Error("A container contains an invalid component.");
+    if (item.type === 10) {
+      if (typeof item.content !== "string") throw new Error("A Text Display must have string content.");
+      addText(item.content);
+      continue;
+    }
+    if (item.type === 14) {
+      if (typeof item.divider !== "boolean" || (item.spacing !== 1 && item.spacing !== 2)) {
+        throw new Error("A separator needs a boolean divider and spacing of 1 or 2.");
+      }
+      embed.separatorDivider = item.divider;
+      embed.separatorSpacing = item.spacing;
+      addBlock("separator");
+      continue;
+    }
+    if (item.type === 12) {
+      if (!Array.isArray(item.items) || item.items.length !== 1) {
+        throw new Error("A container image must contain exactly one media item.");
+      }
+      const media = item.items[0];
+      if (!isRecord(media) || !isRecord(media.media) || typeof media.media.url !== "string") {
+        throw new Error("A container image must have a media URL.");
+      }
+      embed.imageUrl = media.media.url;
+      addBlock("image");
+      continue;
+    }
+    if (item.type === 9) {
+      if (!Array.isArray(item.components) || !isRecord(item.accessory)) {
+        throw new Error("A section needs text components and a valid accessory.");
+      }
+      const text = item.components.map((child) => {
+        if (!isRecord(child) || child.type !== 10 || typeof child.content !== "string") {
+          throw new Error("A section can only contain Text Display components.");
+        }
+        return child.content;
+      }).join("\n\n");
+      if (item.accessory.type === 2) {
+        if (typeof item.accessory.label !== "string" || typeof item.accessory.url !== "string") {
+          throw new Error("A section link button needs a label and URL.");
+        }
+        embed.sectionText = text;
+        embed.sectionButtonLabel = item.accessory.label;
+        embed.sectionButtonUrl = item.accessory.url;
+        addBlock("section_button");
+        continue;
+      }
+      if (item.accessory.type === 11 && isRecord(item.accessory.media) && typeof item.accessory.media.url === "string") {
+        const authorMatch = /^\*\*(.+)\*\*$/.exec(text);
+        if (authorMatch) {
+          embed.authorName = authorMatch[1];
+          embed.authorIconUrl = item.accessory.media.url;
+          addBlock("author");
+        } else {
+          embed.imageUrl = item.accessory.media.url;
+          addBlock("image");
+          addText(text);
+        }
+        continue;
+      }
+      throw new Error("A section accessory must be a link button or thumbnail.");
+    }
+    throw new Error(`Container component type ${item.type} is not supported by the builder.`);
+  }
+  return embed;
+}
+
+function importClassicEmbed(value: unknown): Embed {
+  if (!isRecord(value)) throw new Error("Each embed must be an object.");
+  const embed = makeEmbed();
+  if (value.title !== undefined) {
+    if (typeof value.title !== "string") throw new Error("Embed title must be a string.");
+    embed.title = value.title;
+    if (typeof value.url === "string") embed.titleUrl = value.url;
+    embed.blockOrder.push("title");
+  }
+  if (value.description !== undefined) {
+    if (typeof value.description !== "string") throw new Error("Embed description must be a string.");
+    embed.description = value.description;
+    embed.blockOrder.push("description");
+  }
+  if (typeof value.color === "number" && Number.isInteger(value.color) && value.color >= 0 && value.color <= 0xffffff) {
+    embed.color = `#${value.color.toString(16).padStart(6, "0")}`;
+  }
+  if (value.author !== undefined) {
+    if (!isRecord(value.author) || typeof value.author.name !== "string") throw new Error("Embed author must have a name.");
+    embed.authorName = value.author.name;
+    if (typeof value.author.url === "string") embed.authorUrl = value.author.url;
+    if (typeof value.author.icon_url === "string") embed.authorIconUrl = value.author.icon_url;
+    embed.blockOrder.push("author");
+  }
+  if (value.thumbnail !== undefined) {
+    if (!isRecord(value.thumbnail) || typeof value.thumbnail.url !== "string") throw new Error("Embed thumbnail must have a URL.");
+    embed.thumbnailUrl = value.thumbnail.url;
+    embed.blockOrder.push("thumbnail");
+  }
+  if (value.image !== undefined) {
+    if (!isRecord(value.image) || typeof value.image.url !== "string") throw new Error("Embed image must have a URL.");
+    embed.imageUrl = value.image.url;
+    embed.blockOrder.push("image");
+  }
+  if (value.footer !== undefined) {
+    if (!isRecord(value.footer) || typeof value.footer.text !== "string") throw new Error("Embed footer must have text.");
+    embed.footerText = value.footer.text;
+    if (typeof value.footer.icon_url === "string") embed.footerIconUrl = value.footer.icon_url;
+    embed.blockOrder.push("footer");
+  }
+  if (value.timestamp !== undefined) {
+    if (typeof value.timestamp !== "string" || !Number.isFinite(Date.parse(value.timestamp))) {
+      throw new Error("Embed timestamp must be a valid date.");
+    }
+    embed.timestamp = new Date(value.timestamp).toISOString();
+    embed.blockOrder.push("timestamp");
+  }
+  if (value.fields !== undefined) {
+    if (!Array.isArray(value.fields) || value.fields.length > 25) throw new Error("Embed fields must be an array of up to 25 items.");
+    embed.fields = value.fields.map((field) => {
+      if (!isRecord(field) || typeof field.name !== "string" || typeof field.value !== "string") {
+        throw new Error("Each embed field needs string name and value.");
+      }
+      return {
+        id: crypto.randomUUID(),
+        name: field.name,
+        value: field.value,
+        inline: typeof field.inline === "boolean" ? field.inline : false,
+      };
+    });
+    if (embed.fields.length) embed.blockOrder.push("fields");
+  }
+  return embed;
+}
+
+function importPayload(value: unknown): ImportedBuilderState {
+  if (!isRecord(value)) throw new Error("Expected a JSON object at the top level.");
+  const allowedKeys = new Set(["content", "username", "avatar_url", "tts", "embeds", "allowed_mentions", "flags", "components", "thread_name", "applied_tags"]);
+  const unsupportedKey = Object.keys(value).find((key) => !allowedKeys.has(key));
+  if (unsupportedKey) throw new Error(`Unsupported payload property "${unsupportedKey}".`);
+  if (value.content !== undefined && (typeof value.content !== "string" || value.content.length > 2000)) {
+    throw new Error("content must be a string of 2,000 characters or fewer.");
+  }
+  if (value.username !== undefined && (typeof value.username !== "string" || value.username.length > 80)) {
+    throw new Error("username must be a string of 80 characters or fewer.");
+  }
+  if (value.avatar_url !== undefined && (typeof value.avatar_url !== "string" || !/^https?:\/\//i.test(value.avatar_url))) {
+    throw new Error("avatar_url must be an HTTP or HTTPS URL.");
+  }
+  if (value.thread_name !== undefined && (typeof value.thread_name !== "string" || value.thread_name.length > 100)) {
+    throw new Error("thread_name must be a string of 100 characters or fewer.");
+  }
+  if (value.applied_tags !== undefined && (!Array.isArray(value.applied_tags) || value.applied_tags.some((tag) => typeof tag !== "string"))) {
+    throw new Error("applied_tags must be an array of strings.");
+  }
+  const flags = value.flags === undefined ? 0 : value.flags;
+  if (!Number.isInteger(flags) || ((flags as number) & ~((1 << 2) | (1 << 12) | (1 << 15))) !== 0) {
+    throw new Error("flags contains unsupported message flags.");
+  }
+  const isComponentsV2 = ((flags as number) & (1 << 15)) !== 0;
+  if (isComponentsV2 && (value.content !== undefined || value.embeds !== undefined)) {
+    throw new Error("Components V2 payloads cannot include content or embeds.");
+  }
+  if (isComponentsV2 && !Array.isArray(value.components)) {
+    throw new Error("Components V2 payloads must include a components array.");
+  }
+  if (!isComponentsV2 && value.components !== undefined) {
+    throw new Error("components requires the Components V2 flag.");
+  }
+  if (value.embeds !== undefined && !Array.isArray(value.embeds)) throw new Error("embeds must be an array.");
+  if (Array.isArray(value.embeds) && value.embeds.length > 10) throw new Error("A message can contain up to 10 embeds.");
+  if (value.tts !== undefined) throw new Error("tts is not configurable in the builder.");
+  if (value.allowed_mentions !== undefined) throw new Error("allowed_mentions is not configurable in the builder.");
+
+  let importedContent = typeof value.content === "string" ? value.content : "";
+  const linkButtons: LinkButton[] = [];
+  const textDisplays: { id: string; text: string }[] = [];
+  const mediaGallery: MediaGalleryItem[] = [];
+  const separators: SeparatorBlock[] = [];
+  const embeds: Embed[] = [];
+  const componentOrder: string[] = [];
+  if (value.components !== undefined) {
+    if (!isComponentsV2 || !Array.isArray(value.components) || value.components.length > 40) {
+      throw new Error("components must be an array in a Components V2 payload.");
+    }
+    for (const component of value.components) {
+      if (!isRecord(component) || typeof component.type !== "number") throw new Error("Each component must have a numeric type.");
+      if (component.type === 10) {
+        if (typeof component.content !== "string" || component.content.length > 4000) throw new Error("Text Display content must be a string of 4,000 characters or fewer.");
+        if (!importedContent && textDisplays.length === 0) {
+          importedContent = component.content;
+        } else {
+          const item = { id: crypto.randomUUID(), text: component.content };
+          textDisplays.push(item);
+          componentOrder.push(`text:${item.id}`);
+        }
+      } else if (component.type === 1) {
+        if (!Array.isArray(component.components) || component.components.length > 5) throw new Error("An action row must contain up to 5 buttons.");
+        for (const button of component.components) {
+          if (
+            !isRecord(button)
+            || button.type !== 2
+            || button.style !== 5
+            || typeof button.label !== "string"
+            || !button.label.trim()
+            || button.label.length > 80
+            || typeof button.url !== "string"
+            || !/^https?:\/\//i.test(button.url)
+          ) {
+            throw new Error("Action rows can only contain link buttons with a label and URL.");
+          }
+          linkButtons.push({ id: crypto.randomUUID(), label: button.label, url: button.url });
+        }
+        if (linkButtons.length > 5) throw new Error("The builder supports up to 5 link buttons.");
+        if (linkButtons.length) componentOrder.push("buttons");
+      } else if (component.type === 12) {
+        if (!Array.isArray(component.items) || component.items.length > 10) throw new Error("A media gallery can contain up to 10 items.");
+        for (const media of component.items) {
+          if (!isRecord(media) || !isRecord(media.media) || typeof media.media.url !== "string" || !/^https?:\/\//i.test(media.media.url)) throw new Error("Each gallery item needs an HTTP or HTTPS media URL.");
+          const item = {
+            id: crypto.randomUUID(),
+            url: media.media.url,
+            description: typeof media.description === "string" ? media.description : "",
+            spoiler: media.spoiler === true,
+          };
+          mediaGallery.push(item);
+        }
+        if (mediaGallery.length) componentOrder.push("gallery");
+      } else if (component.type === 14) {
+        if (typeof component.divider !== "boolean" || (component.spacing !== 1 && component.spacing !== 2)) {
+          throw new Error("A separator needs a boolean divider and spacing of 1 or 2.");
+        }
+        const item = {
+          id: crypto.randomUUID(),
+          divider: component.divider,
+          spacing: component.spacing === 2 ? 2 as const : 1 as const,
+        };
+        separators.push(item);
+        componentOrder.push(`separator:${item.id}`);
+      } else if (component.type === 17) {
+        const embed = importEmbedComponent(component);
+        embeds.push(embed);
+        componentOrder.push(`container:${embed.id}`);
+      } else {
+        throw new Error(`Component type ${component.type} is not supported by the builder.`);
+      }
+    }
+  }
+
+  if (Array.isArray(value.embeds)) {
+    for (const classicEmbed of value.embeds) {
+      const embed = importClassicEmbed(classicEmbed);
+      embeds.push(embed);
+      componentOrder.push(`container:${embed.id}`);
+    }
+  }
+  if (embeds.length > 10) throw new Error("The builder supports up to 10 containers or embeds.");
+  if (isComponentsV2 && (value.components as unknown[]).length === 0) {
+    throw new Error("A Components V2 message needs at least one component.");
+  }
+  if (!isComponentsV2 && !importedContent.trim() && !embeds.length) {
+    throw new Error("The payload needs message content or at least one embed.");
+  }
+
+  return {
+    content: importedContent,
+    username: typeof value.username === "string" ? value.username : "",
+    avatarUrl: typeof value.avatar_url === "string" ? value.avatar_url : "",
+    threadName: typeof value.thread_name === "string" ? value.thread_name : "",
+    appliedTags: Array.isArray(value.applied_tags) ? value.applied_tags.join(", ") : "",
+    suppressEmbeds: ((flags as number) & (1 << 2)) !== 0,
+    suppressNotifications: ((flags as number) & (1 << 12)) !== 0,
+    linkButtons,
+    textDisplays,
+    mediaGallery,
+    separators,
+    componentOrder,
+    embeds,
+  };
+}
+
 export default function DiscordStudioWorkspace() {
   const [tab, setTab] = useState<WorkspaceTab>("builder");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -104,6 +471,14 @@ export default function DiscordStudioWorkspace() {
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [webhookProfile, setWebhookProfile] = useState<{ webhookUrl: string; username: string; avatarUrl: string } | null>(null);
+  const [profileError, setProfileError] = useState<{ webhookUrl: string; message: string } | null>(null);
+  const [messageUrl, setMessageUrl] = useState("");
+  const [isLoadingMessage, setIsLoadingMessage] = useState(false);
+  const [isEditingMessage, setIsEditingMessage] = useState(false);
+  const [rawJson, setRawJson] = useState("");
+  const [rawJsonEdited, setRawJsonEdited] = useState(false);
+  const [rawJsonError, setRawJsonError] = useState<string | null>(null);
   const [threadId, setThreadId] = useState("");
   const [threadName, setThreadName] = useState("");
   const [appliedTags, setAppliedTags] = useState("");
@@ -649,6 +1024,120 @@ export default function DiscordStudioWorkspace() {
 
   const jsonString = JSON.stringify(payload, null, 2);
 
+  const applyImportedPayload = (imported: ImportedBuilderState) => {
+    setContent(imported.content);
+    setUsername(imported.username);
+    setAvatarUrl(imported.avatarUrl);
+    setThreadName(imported.threadName);
+    setAppliedTags(imported.appliedTags);
+    setSuppressEmbeds(imported.suppressEmbeds);
+    setSuppressNotifications(imported.suppressNotifications);
+    setLinkButtons(imported.linkButtons);
+    setTextDisplays(imported.textDisplays);
+    setMediaGallery(imported.mediaGallery);
+    setAttachedFiles([]);
+    setSeparators(imported.separators);
+    setComponentOrder(imported.componentOrder);
+    setEmbeds(imported.embeds);
+    setActiveEmbedId(imported.embeds[0]?.id ?? null);
+  };
+
+  const handleRawJsonChange = (value: string) => {
+    setRawJson(value);
+    setRawJsonEdited(true);
+    try {
+      const imported = importPayload(JSON.parse(value) as unknown);
+      applyImportedPayload(imported);
+      setRawJsonEdited(false);
+      setRawJsonError(null);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "The payload could not be read.";
+      setRawJsonError(`Invalid JSON: ${reason}`);
+    }
+  };
+
+  useEffect(() => {
+    const trimmedUrl = webhookUrl.trim();
+    if (!trimmedUrl) return;
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch("/api/webhook/manage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "profile", webhookUrl: trimmedUrl }),
+          signal: controller.signal,
+        });
+        const result: unknown = await response.json();
+        if (
+          !response.ok
+          || typeof result !== "object"
+          || result === null
+          || !("username" in result)
+          || typeof result.username !== "string"
+          || !("avatarUrl" in result)
+          || typeof result.avatarUrl !== "string"
+        ) {
+          const message = typeof result === "object" && result !== null && "message" in result && typeof result.message === "string"
+            ? result.message
+            : "Could not load the webhook profile.";
+          setProfileError({ webhookUrl: trimmedUrl, message });
+          return;
+        }
+        setWebhookProfile({ webhookUrl: trimmedUrl, username: result.username, avatarUrl: result.avatarUrl });
+      } catch {
+        if (!controller.signal.aborted) {
+          setProfileError({ webhookUrl: trimmedUrl, message: "Could not load the webhook profile." });
+        }
+      }
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [webhookUrl]);
+
+  const loadMessage = async () => {
+    setSendResult(null);
+    if (!webhookUrl.trim() || !messageUrl.trim()) {
+      setSendResult({ kind: "error", message: "Enter both the webhook URL and the sent message link." });
+      return;
+    }
+
+    setIsLoadingMessage(true);
+    try {
+      const response = await fetch("/api/webhook/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "load_message", webhookUrl: webhookUrl.trim(), messageUrl: messageUrl.trim() }),
+      });
+      const result: unknown = await response.json();
+      if (!response.ok || typeof result !== "object" || result === null || !("payload" in result)) {
+        const message = typeof result === "object" && result !== null && "message" in result && typeof result.message === "string"
+          ? result.message
+          : "Could not load that webhook message.";
+        setSendResult({ kind: "error", message });
+        return;
+      }
+
+      const imported = importPayload(result.payload);
+      applyImportedPayload(imported);
+      setRawJson(JSON.stringify(result.payload, null, 2));
+      setRawJsonEdited(false);
+      setRawJsonError(null);
+      setIsEditingMessage(true);
+      setTab("json");
+      setSendResult({ kind: "success", message: "Message loaded. Edit the JSON, then choose Update Webhook." });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Network error loading the webhook message.";
+      setSendResult({ kind: "error", message });
+    } finally {
+      setIsLoadingMessage(false);
+    }
+  };
+
   function addContainerText(text: string[], children: DiscordComponent[]) {
     let remaining = text.join("\n\n").trim();
     while (remaining.length > 4000) {
@@ -711,27 +1200,47 @@ export default function DiscordStudioWorkspace() {
       return;
     }
 
-    const validationError = validatePayload();
-    if (validationError) {
-      setSendResult({ kind: "error", message: validationError });
+    let outgoingPayload: unknown = payload;
+    if (rawJsonEdited) {
+      try {
+        outgoingPayload = JSON.parse(rawJson) as unknown;
+        importPayload(outgoingPayload);
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : "The payload could not be read.";
+        setRawJsonError(`Invalid JSON: ${reason}`);
+        setTab("json");
+        return;
+      }
+    } else {
+      const validationError = validatePayload();
+      if (validationError) {
+        setSendResult({ kind: "error", message: validationError });
+        return;
+      }
+    }
+
+    if (isEditingMessage && !messageUrl.trim()) {
+      setSendResult({ kind: "error", message: "Enter the message link you want to update." });
       return;
     }
 
     setIsSending(true);
     try {
       const res = await fetch("/api/webhook/execute", {
-        method: "POST",
+        method: isEditingMessage ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           webhookUrl: webhookUrl.trim(),
+          ...(isEditingMessage && { messageUrl: messageUrl.trim() }),
           threadId: threadId.trim(),
-          payload,
+          payload: outgoingPayload,
         }),
       });
 
       const responseBody = await res.json().catch(() => null);
       if (res.ok) {
         setSendResult({ kind: "success", message: responseBody?.message || "Payload dispatched successfully!" });
+        if (isEditingMessage) setIsEditingMessage(false);
       } else {
         setSendResult({ kind: "error", message: responseBody?.message || `Discord Error: ${res.status}` });
       }
@@ -741,6 +1250,10 @@ export default function DiscordStudioWorkspace() {
       setIsSending(false);
     }
   };
+
+  const activeWebhookProfile = webhookProfile?.webhookUrl === webhookUrl.trim() ? webhookProfile : null;
+  const previewName = username.trim() || activeWebhookProfile?.username || "Webhook Bot";
+  const previewAvatar = avatarUrl.trim() || activeWebhookProfile?.avatarUrl || "";
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#dbdee1", fontFamily: "'gg sans', 'Helvetica Neue', Helvetica, Arial, sans-serif", padding: "20px" }}>
@@ -796,7 +1309,7 @@ export default function DiscordStudioWorkspace() {
               { id: "builder", label: "Canvas Builder", icon: Layout },
               { id: "bot_settings", label: "Bot & Signals", icon: Settings },
               { id: "dispatch", label: "Deploy & Webhook", icon: Send },
-              { id: "json", label: "Raw JSON", icon: Code2 },
+              { id: "json", label: "JSON Editor", icon: Code2 },
             ].map((item) => {
               const Icon = item.icon;
               const active = tab === item.id;
@@ -845,7 +1358,7 @@ export default function DiscordStudioWorkspace() {
               cursor: "pointer",
             }}
           >
-            {isSending ? "Dispatching..." : "Send Webhook"}
+            {isSending ? (isEditingMessage ? "Updating..." : "Dispatching...") : (isEditingMessage ? "Update Webhook" : "Send Webhook")}
           </button>
         </div>
 
@@ -1220,15 +1733,15 @@ export default function DiscordStudioWorkspace() {
             <div style={{ backgroundColor: "#2b2d31", borderRadius: "8px", border: "1px solid #383a40", padding: "20px", minHeight: "260px" }}>
               <div style={{ display: "flex", gap: "14px", marginBottom: "16px" }}>
                 <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "#5865f2", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>
-                  {avatarUrl.trim() ? (
-                    <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  {previewAvatar ? (
+                    <img src={previewAvatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
-                    username ? username.slice(0, 1).toUpperCase() : "B"
+                    previewName.slice(0, 1).toUpperCase()
                   )}
                 </div>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ color: "#fff", fontWeight: 600, fontSize: "15px" }}>{username || "Webhook Bot"}</span>
+                    <span style={{ color: "#fff", fontWeight: 600, fontSize: "15px" }}>{previewName}</span>
                     <span style={{ backgroundColor: "#5865f2", color: "#fff", fontSize: "10px", padding: "1px 4px", borderRadius: "3px", fontWeight: 700 }}>APP</span>
                   </div>
 
@@ -2086,11 +2599,59 @@ export default function DiscordStudioWorkspace() {
               <input
                 type="password"
                 value={webhookUrl}
-                onChange={(e) => setWebhookUrl(e.target.value)}
+                onChange={(e) => {
+                  setWebhookUrl(e.target.value);
+                  setIsEditingMessage(false);
+                }}
                 placeholder="https://discord.com/api/webhooks/..."
                 style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
               />
             </label>
+
+            {profileError?.webhookUrl === webhookUrl.trim() && (
+              <div style={{ color: "#f23f43", fontSize: "12px" }}>{profileError.message}</div>
+            )}
+
+            <div style={{ borderTop: "1px solid #2b2d31", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>EDIT A SENT WEBHOOK MESSAGE</span>
+              <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ fontSize: "11px", color: "#949ba4" }}>DISCORD MESSAGE LINK</span>
+                <input
+                  value={messageUrl}
+                  onChange={(e) => {
+                    setMessageUrl(e.target.value);
+                    setIsEditingMessage(false);
+                  }}
+                  placeholder="https://discord.com/channels/server/channel/message"
+                  style={{ backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "13px", outline: "none" }}
+                />
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={loadMessage}
+                  disabled={isLoadingMessage}
+                  style={{ backgroundColor: "#5865f2", border: "none", color: "#fff", padding: "7px 12px", borderRadius: "5px", fontSize: "12px", cursor: isLoadingMessage ? "wait" : "pointer" }}
+                >
+                  {isLoadingMessage ? "Loading message..." : "Load message"}
+                </button>
+                {isEditingMessage && (
+                  <>
+                    <span style={{ color: "#23a55a", fontSize: "12px" }}>Message loaded for editing</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingMessage(false)}
+                      style={{ background: "none", border: "none", color: "#b5bac1", fontSize: "12px", cursor: "pointer" }}
+                    >
+                      Cancel edit
+                    </button>
+                  </>
+                )}
+                <span style={{ color: "#949ba4", fontSize: "11px" }}>
+                  The message link identifies the message; its webhook URL is still required to authorize edits.
+                </span>
+              </div>
+            </div>
 
             <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <span style={{ fontSize: "11px", color: "#b5bac1", fontWeight: 700 }}>TARGET THREAD ID (OPTIONAL)</span>
@@ -2107,21 +2668,50 @@ export default function DiscordStudioWorkspace() {
         {tab === "json" && (
           <div style={{ backgroundColor: "#1e1f22", borderRadius: "8px", border: "1px solid #2b2d31", padding: "18px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-              <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: 700 }}>PAYLOAD JSON</span>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(jsonString);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 1500);
-                }}
-                style={{ backgroundColor: "#2b2d31", border: "none", color: "#fff", padding: "5px 10px", borderRadius: "4px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                {copied ? <Check size={13} /> : <Copy size={13} />}
-                {copied ? "Copied" : "Copy Payload"}
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: 700 }}>EDITABLE PAYLOAD JSON</span>
+                <span style={{ fontSize: "11px", color: rawJsonEdited ? "#f0b232" : "#949ba4" }}>
+                  {rawJsonEdited ? "JSON has not been applied to the builder." : "Changes made here update the preview and builder settings."}
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRawJsonEdited(false);
+                    setRawJsonError(null);
+                  }}
+                  style={{ backgroundColor: "#2b2d31", border: "none", color: "#fff", padding: "5px 10px", borderRadius: "4px", fontSize: "12px", cursor: "pointer" }}
+                >
+                  Reset from builder
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(rawJsonEdited ? rawJson : jsonString);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1500);
+                  }}
+                  style={{ backgroundColor: "#2b2d31", border: "none", color: "#fff", padding: "5px 10px", borderRadius: "4px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  {copied ? <Check size={13} /> : <Copy size={13} />}
+                  {copied ? "Copied" : "Copy JSON"}
+                </button>
+              </div>
             </div>
-            <pre style={{ margin: 0, fontSize: "13px", color: "#569cd6", fontFamily: "monospace", overflowX: "auto" }}>{jsonString}</pre>
+            <textarea
+              aria-label="Webhook payload JSON"
+              value={rawJsonEdited ? rawJson : jsonString}
+              onChange={(e) => handleRawJsonChange(e.target.value)}
+              spellCheck={false}
+              rows={24}
+              style={{ width: "100%", minHeight: "420px", boxSizing: "border-box", margin: 0, padding: "12px", backgroundColor: "#111214", border: "1px solid #383a40", borderRadius: "6px", color: "#9cdcfe", fontSize: "13px", fontFamily: "monospace", lineHeight: 1.5, resize: "vertical", outline: "none" }}
+            />
+            {rawJsonError && (
+              <div role="alert" style={{ marginTop: "8px", color: "#f23f43", fontSize: "12px" }}>
+                {rawJsonError}
+              </div>
+            )}
           </div>
         )}
 

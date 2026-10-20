@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 const maxRequestBytes = 24 * 1024 * 1024;
 const webhookPathPattern = /^\/api\/webhooks\/\d{17,20}\/[A-Za-z0-9._-]+$/;
 const allowedHosts = new Set(["discord.com", "discordapp.com"]);
+const messagePathPattern = /^\/channels\/(?:\d{17,20}|@me)\/\d{17,20}\/(\d{17,20})$/;
 const allowedEmbedKeys = new Set(["author", "title", "url", "description", "color", "thumbnail", "image", "footer", "timestamp", "fields"]);
 const componentsV2Flag = 1 << 15;
 const allowedMessageFlags = (1 << 2) | (1 << 12) | componentsV2Flag;
@@ -333,6 +334,75 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { message: discordMessage, status: discordResponse.status, retryAfter },
+      { status: discordResponse.status >= 400 && discordResponse.status < 600 ? discordResponse.status : 502 },
+    );
+  } catch {
+    return NextResponse.json({ message: "Could not reach Discord. Check your connection and try again." }, { status: 502 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  let body: unknown;
+  try {
+    const text = await request.text();
+    if (new TextEncoder().encode(text).byteLength > 128 * 1024) {
+      return NextResponse.json({ message: "Request is too large." }, { status: 413 });
+    }
+    body = JSON.parse(text) as unknown;
+  } catch {
+    return NextResponse.json({ message: "Request body is invalid." }, { status: 400 });
+  }
+  if (!isRecord(body)) return NextResponse.json({ message: "Request body must be an object." }, { status: 400 });
+
+  const webhookUrl = parseWebhookUrl(body.webhookUrl);
+  if (!webhookUrl) return NextResponse.json({ message: "Enter a valid Discord webhook URL." }, { status: 400 });
+  if (typeof body.messageUrl !== "string" || body.messageUrl.length > 512) {
+    return NextResponse.json({ message: "Enter a valid Discord message link." }, { status: 400 });
+  }
+
+  let messageId: string | null = null;
+  try {
+    const messageUrl = new URL(body.messageUrl.trim());
+    const match = messagePathPattern.exec(messageUrl.pathname);
+    if (
+      messageUrl.protocol === "https:"
+      && allowedHosts.has(messageUrl.hostname)
+      && !messageUrl.port
+      && !messageUrl.username
+      && !messageUrl.password
+      && match
+    ) messageId = match[1];
+  } catch {
+  }
+  if (!messageId) return NextResponse.json({ message: "Enter a valid Discord message link." }, { status: 400 });
+
+  const payloadError = validatePayload(body.payload, []);
+  if (payloadError) return NextResponse.json({ message: payloadError }, { status: 400 });
+
+  webhookUrl.pathname = `${webhookUrl.pathname}/messages/${messageId}`;
+  webhookUrl.searchParams.set("with_components", "true");
+
+  try {
+    const discordResponse = await fetch(webhookUrl, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body.payload),
+      cache: "no-store",
+      redirect: "error",
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (discordResponse.ok) return NextResponse.json({ ok: true, message: "Webhook message updated." });
+
+    let discordMessage = "Discord rejected the webhook edit.";
+    try {
+      const responseBody: unknown = await discordResponse.json();
+      if (isRecord(responseBody) && typeof responseBody.message === "string") {
+        discordMessage = responseBody.message.slice(0, 500);
+      }
+    } catch {
+    }
+    return NextResponse.json(
+      { message: discordMessage },
       { status: discordResponse.status >= 400 && discordResponse.status < 600 ? discordResponse.status : 502 },
     );
   } catch {
