@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling, Calculator, CalendarDays, TypeOutline, Space, KeyRound, BrickWallShield, Regex, Puzzle, Braces, Baseline } from 'lucide-react';
+import { ArrowUpRight, Webhook, Library, BadgePlus, GlobeCode, UserSearch, Link2, Newspaper, Users, Search, Package, Snowflake, Palette, PencilLine, ArrowDownWideNarrow, FileMusic, Scaling, Calculator, CalendarDays, TypeOutline, Space, KeyRound, BrickWallShield, Regex, Puzzle, Braces, Baseline, BookText } from 'lucide-react';
 import { ServerSearch } from './components/icons/ServerSearch';
 
 const officialPages = [
@@ -13,6 +13,13 @@ const officialPages = [
     icon: Newspaper,
     iconClass: 'news-icon'
   },
+  {
+    title: 'Discapp Docs',
+    description: 'Documentation for Discapp tools and features.',
+    href: 'https://docs.discapp.org',
+    icon: BookText,
+    iconClass: 'docs-icon'
+  }
 ];
 
 const tools = [
