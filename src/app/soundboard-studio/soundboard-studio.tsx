@@ -3,7 +3,7 @@
 import React, { useState, useRef, ChangeEvent } from "react";
 import { Upload, Download, Play, Pause, Scissors, Volume2, Gauge, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
 
-export default function SoundboardConverter() {
+export default function SoundboardStudio() {
   const [file, setFile] = useState<File | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -218,7 +218,7 @@ export default function SoundboardConverter() {
         
         <div style={{ marginBottom: "28px" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", letterSpacing: "-0.025em", color: "#ffffff", marginBottom: "6px" }}>
-            Soundboard Converter
+            Soundboard Studio
           </h1>
           <p style={{ color: "#949ba4", fontSize: "14px", lineHeight: "1.5" }}>
             Trim, adjust playback speed, boost volume, and export optimized clips for a Discord Soundboard.

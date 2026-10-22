@@ -6,53 +6,42 @@ interface AutoModRule {
   id: string;
   name: string;
   enabled: boolean;
-  eventType: "MESSAGE_SEND";
-  triggerType: "KEYWORD" | "REGEX" | "SPAM" | "MENTION_SPAM";
-  keywords: string[];
-  regexPatterns: string[];
-  allowList: string[];
-  actions: ("BLOCK" | "TIMEOUT" | "ALERT")[];
-  timeoutDurationSeconds: number;
+  triggerType: "KEYWORD" | "REGEX";
+  patterns: string[];
+  action: "BLOCK" | "TIMEOUT";
 }
 
 export default function AutoModTester() {
   const [rules, setRules] = useState<AutoModRule[]>([
     {
       id: "rule_1",
-      name: "Block Bad Words",
+      name: "Bad Words & Scams",
       enabled: true,
-      eventType: "MESSAGE_SEND",
       triggerType: "KEYWORD",
-      keywords: ["badword", "scam", "free nitro", "crypto giveaway"],
-      regexPatterns: [],
-      allowList: ["unscammable"],
-      actions: ["BLOCK", "ALERT"],
-      timeoutDurationSeconds: 60,
+      patterns: ["badword", "scam", "free nitro", "crypto giveaway"],
+      action: "BLOCK",
     },
     {
       id: "rule_2",
-      name: "Block Discord Invites & Phishing Domains",
+      name: "Invites & Phishing Links",
       enabled: true,
-      eventType: "MESSAGE_SEND",
       triggerType: "REGEX",
-      keywords: [],
-      regexPatterns: [
-        "(discord\\.gg\/[a-zA-Z0-9]+|discord\\.com\/invite\/[a-zA-Z0-9]+)",
+      patterns: [
+        "(discord\\.gg\\/[a-zA-Z0-9]+|discord\\.com\\/invite\\/[a-zA-Z0-9]+)",
         "(steamcommunnity|discord-nitro|freegift)\\.com",
       ],
-      allowList: ["discord.gg/official"],
-      actions: ["BLOCK", "TIMEOUT"],
-      timeoutDurationSeconds: 300,
+      action: "TIMEOUT",
     },
   ]);
 
-  const [testMessage, setTestMessage] = useState<string>("Hey guys, check out this free nitro giveaway at discord.gg/fakeinvite!");
-  const [activeTab, setActiveTab] = useState<"simulator" | "rules">("simulator");
-  const [selectedRuleId, setSelectedRuleId] = useState<string>(rules[0].id);
+  const [testMessage, setTestMessage] = useState<string>(
+    "Hey guys, check out this free nitro giveaway at discord.gg/fakeinvite!"
+  );
 
-  const [newRuleName, setNewRuleName] = useState<string>("Custom Regex Filter");
+  // Rule Creator State
+  const [newRuleName, setNewRuleName] = useState<string>("");
   const [newRuleType, setNewRuleType] = useState<"KEYWORD" | "REGEX">("REGEX");
-  const [newRuleInput, setNewRuleInput] = useState<string>("(password|token|secret)");
+  const [newRuleInput, setNewRuleInput] = useState<string>("");
   const [newRuleAction, setNewRuleAction] = useState<"BLOCK" | "TIMEOUT">("BLOCK");
 
   const evaluateMessage = (message: string) => {
@@ -63,19 +52,14 @@ export default function AutoModTester() {
     for (const rule of rules) {
       if (!rule.enabled) continue;
 
-      const isAllowed = rule.allowList.some((allowed) => 
-        message.toLowerCase().includes(allowed.toLowerCase())
-      );
-      if (isAllowed) continue;
-
       if (rule.triggerType === "KEYWORD") {
-        for (const kw of rule.keywords) {
+        for (const kw of rule.patterns) {
           if (!kw.trim()) continue;
-          const regex = new RegExp(`\\b${kw.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, "i");
+          const regex = new RegExp(`\\b${kw.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
           if (regex.test(message) || message.toLowerCase().includes(kw.toLowerCase())) {
             triggeredMatches.push({
               ruleName: rule.name,
-              action: rule.actions.join(" + "),
+              action: rule.action === "TIMEOUT" ? "Block + Timeout" : "Block Message",
               matchedPattern: `Keyword: "${kw}"`,
             });
             break;
@@ -84,20 +68,19 @@ export default function AutoModTester() {
       }
 
       if (rule.triggerType === "REGEX") {
-        for (const pattern of rule.regexPatterns) {
+        for (const pattern of rule.patterns) {
           if (!pattern.trim()) continue;
           try {
             const regex = new RegExp(pattern, "i");
             if (regex.test(message)) {
               triggeredMatches.push({
                 ruleName: rule.name,
-                action: rule.actions.join(" + "),
+                action: rule.action === "TIMEOUT" ? "Block + Timeout" : "Block Message",
                 matchedPattern: `Regex: /${pattern}/`,
               });
               break;
             }
-          } catch (e) {
-          }
+          } catch (e) {}
         }
       }
     }
@@ -118,27 +101,25 @@ export default function AutoModTester() {
       id: `rule_${Date.now()}`,
       name: newRuleName.trim(),
       enabled: true,
-      eventType: "MESSAGE_SEND",
       triggerType: newRuleType,
-      keywords: newRuleType === "KEYWORD" ? newRuleInput.split(",").map(s => s.trim()) : [],
-      regexPatterns: newRuleType === "REGEX" ? [newRuleInput.trim()] : [],
-      allowList: [],
-      actions: [newRuleAction, "ALERT"],
-      timeoutDurationSeconds: 120,
+      patterns:
+        newRuleType === "KEYWORD"
+          ? newRuleInput.split(",").map((s) => s.trim()).filter(Boolean)
+          : [newRuleInput.trim()],
+      action: newRuleAction,
     };
 
     setRules([...rules, newRule]);
     setNewRuleName("");
     setNewRuleInput("");
-    setActiveTab("rules");
   };
 
   const toggleRuleEnabled = (id: string) => {
-    setRules(rules.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
+    setRules(rules.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)));
   };
 
   const deleteRule = (id: string) => {
-    setRules(rules.filter(r => r.id !== id));
+    setRules(rules.filter((r) => r.id !== id));
   };
 
   return (
@@ -151,354 +132,192 @@ export default function AutoModTester() {
         padding: "40px 20px",
       }}
     >
-      <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-        
-        <div style={{ marginBottom: "28px", textAlign: "left" }}>
-          <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
-            Discord AutoMod Sandbox & Tester
+      <div
+        style={{
+          maxWidth: "800px",
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: "28px",
+        }}
+      >
+        {/* Header Section */}
+        <div style={{ textAlign: "left" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px", letterSpacing: "-0.5px" }}>
+            AutoMod Tester
           </h1>
-          <p style={{ color: "#80848e", fontSize: "14px", lineHeight: "1.5" }}>
-            Simulate Discord's native AutoMod engine in real-time. Test custom regex patterns, keywords, and action triggers against incoming messages.
+          <p style={{ color: "#80848e", fontSize: "14px", lineHeight: "1.5", margin: 0 }}>
+            Configure AutoMod filters and test them instantly against sample text payloads.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
-          {[
-            { id: "simulator", label: "🛡️ Live Sandbox Simulator" },
-            { id: "rules", label: `⚙️ Manage Rules (${rules.length})` },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
+        {/* SINGLE VERTICAL STACK CONTAINER */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          
+          {/* SECTION 1: LIVE SIMULATOR */}
+          <div
+            style={{
+              backgroundColor: "#141518",
+              border: "1px solid #232428",
+              borderRadius: "12px",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+            }}
+          >
+            <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#ffffff", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Simulator
+            </h3>
+
+            {/* Test Message Input */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
+                Test Message Input
+              </label>
+              <textarea
+                value={testMessage}
+                onChange={(e) => setTestMessage(e.target.value)}
+                placeholder="Type a test message here..."
+                rows={3}
                 style={{
-                  padding: "10px 18px",
-                  backgroundColor: isActive ? "#1e1f22" : "#141518",
-                  border: isActive ? "1px solid #acf6c8" : "1px solid #232428",
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: "#0b0c0e",
+                  border: "1px solid #2b2d31",
                   borderRadius: "8px",
-                  color: isActive ? "#acf6c8" : "#949ba4",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer",
+                  color: "#ffffff",
+                  fontSize: "13px",
+                  outline: "none",
+                  resize: "vertical",
+                  boxSizing: "border-box",
+                  lineHeight: "1.5",
+                  fontFamily: "sans-serif",
                 }}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+              />
+            </div>
 
-        {activeTab === "simulator" ? (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start" }}>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              
-              <div
-                style={{
-                  backgroundColor: "#141518",
-                  border: "1px solid #232428",
-                  borderRadius: "12px",
-                  padding: "20px",
-                }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <label style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
-                    Simulate Incoming Message
-                  </label>
-                  <textarea
-                    value={testMessage}
-                    onChange={(e) => setTestMessage(e.target.value)}
-                    placeholder="Type a test message here..."
-                    rows={4}
-                    style={{
-                      width: "100%",
-                      padding: "12px",
-                      backgroundColor: "#0b0c0e",
-                      border: "1px solid #2b2d31",
-                      borderRadius: "8px",
-                      color: "#ffffff",
-                      fontSize: "14px",
-                      outline: "none",
-                      resize: "vertical",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "flex", gap: "6px", marginTop: "12px", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: "11px", color: "#80848e", fontWeight: "600" }}>Quick Tests:</span>
-                  {[
-                    "Hey check out this free nitro giveaway!",
-                    "Join my server at discord.gg/example",
-                    "Hello everyone, have a great day!",
-                    "My password is secure123",
-                  ].map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setTestMessage(preset)}
-                      style={{
-                        backgroundColor: "#0b0c0e",
-                        border: "1px solid #2b2d31",
-                        color: "#f2f3f5",
-                        padding: "4px 8px",
-                        borderRadius: "6px",
-                        fontSize: "11px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {preset.slice(0, 24)}...
-                    </button>
-                  ))}
-                </div>
+            {/* Engine Verdict Box */}
+            <div
+              style={{
+                backgroundColor: "#0b0c0e",
+                border: "1px solid #2b2d31",
+                borderRadius: "8px",
+                padding: "16px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
+                  Verdict:
+                </span>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    backgroundColor: evaluationResult.triggered ? "rgba(237, 66, 69, 0.1)" : "rgba(172, 246, 200, 0.1)",
+                    color: evaluationResult.triggered ? "#ed4245" : "#acf6c8",
+                    border: `1px solid ${evaluationResult.triggered ? "#ed4245" : "#acf6c8"}`,
+                  }}
+                >
+                  {evaluationResult.triggered ? "BLOCKED" : "PASSED"}
+                </span>
               </div>
 
-              <div
-                style={{
-                  backgroundColor: "#141518",
-                  border: "1px solid #232428",
-                  borderRadius: "12px",
-                  padding: "20px",
-                }}
-              >
-                <h3 style={{ fontSize: "13px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase", marginBottom: "12px" }}>
-                  Rules Active in Sandbox ({rules.filter(r => r.enabled).length})
-                </h3>
+              {evaluationResult.triggered ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {rules.map((rule) => (
+                  <span style={{ fontSize: "11px", color: "#949ba4" }}>Matched Violations:</span>
+                  {evaluationResult.matches.map((match, i) => (
                     <div
-                      key={rule.id}
+                      key={i}
                       style={{
+                        backgroundColor: "#141518",
+                        border: "1px solid #232428",
+                        borderRadius: "6px",
+                        padding: "10px 12px",
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        padding: "10px",
-                        backgroundColor: "#0b0c0e",
-                        borderRadius: "8px",
-                        border: "1px solid #2b2d31",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span
-                          style={{
-                            width: "8px",
-                            height: "8px",
-                            borderRadius: "50%",
-                            backgroundColor: rule.enabled ? "#acf6c8" : "#80848e",
-                          }}
-                        />
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                         <span style={{ fontSize: "13px", fontWeight: "600", color: "#ffffff" }}>
-                          {rule.name}
+                          {match.ruleName}
+                        </span>
+                        <span style={{ fontSize: "11px", color: "#80848e", fontFamily: "monospace" }}>
+                          {match.matchedPattern}
                         </span>
                       </div>
-                      <span style={{ fontSize: "11px", color: "#80848e", fontFamily: "monospace" }}>
-                        {rule.triggerType}
+                      <span style={{ fontSize: "11px", color: "#ed4245", fontWeight: "700" }}>
+                        {match.action}
                       </span>
                     </div>
                   ))}
                 </div>
-              </div>
-
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div
-                style={{
-                  backgroundColor: "#141518",
-                  border: evaluationResult.triggered ? "1px solid #ed4245" : "1px solid #acf6c8",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  minHeight: "340px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "12px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
-                      AutoMod Engine Verdict
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: "700",
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        backgroundColor: evaluationResult.triggered ? "rgba(237, 66, 69, 0.1)" : "rgba(172, 246, 200, 0.1)",
-                        color: evaluationResult.triggered ? "#ed4245" : "#acf6c8",
-                        border: `1px solid ${evaluationResult.triggered ? "#ed4245" : "#acf6c8"}`,
-                      }}
-                    >
-                      {evaluationResult.triggered ? "🚨 MESSAGE BLOCKED" : "✅ MESSAGE PASSED"}
-                    </span>
-                  </div>
-
-                  {evaluationResult.triggered ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                      <p style={{ fontSize: "13px", color: "#f2f3f5", margin: 0 }}>
-                        The message violated the following active AutoMod rule(s):
-                      </p>
-                      
-                      {evaluationResult.matches.map((match, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            backgroundColor: "#0b0c0e",
-                            border: "1px solid #2b2d31",
-                            borderRadius: "8px",
-                            padding: "12px",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "6px",
-                          }}
-                        >
-                          <div style={{ display: "flex", justifyContent: "space-between" }}>
-                            <span style={{ fontSize: "13px", fontWeight: "600", color: "#ffffff" }}>
-                              Rule: {match.ruleName}
-                            </span>
-                            <span style={{ fontSize: "11px", color: "#ed4245", fontWeight: "700" }}>
-                              Action: {match.action}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: "11px", color: "#949ba4", fontFamily: "monospace" }}>
-                            Triggered by: {match.matchedPattern}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "20px 0" }}>
-                      <p style={{ fontSize: "14px", color: "#80848e", margin: 0 }}>
-                        No filters triggered. Message successfully delivered to channel timeline.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "16px" }}>
-                  <span style={{ fontSize: "11px", color: "#80848e", fontWeight: "600" }}>
-                    Channel Preview Simulation:
-                  </span>
-                  <div
-                    style={{
-                      backgroundColor: "#2b2d31",
-                      borderRadius: "6px",
-                      padding: "12px",
-                      fontSize: "14px",
-                      color: evaluationResult.triggered ? "#ed4245" : "#f2f3f5",
-                      textDecoration: evaluationResult.triggered ? "line-through" : "none",
-                      wordBreak: "break-all",
-                    }}
-                  >
-                    {testMessage || "Empty message..."}
-                  </div>
-                </div>
-
-              </div>
+              ) : (
+                <p style={{ fontSize: "13px", color: "#80848e", margin: 0 }}>
+                  No rules triggered.
+                </p>
+              )}
             </div>
 
           </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            
-            <div
-              style={{
-                backgroundColor: "#141518",
-                border: "1px solid #232428",
-                borderRadius: "12px",
-                padding: "24px",
-              }}
-            >
-              <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#ffffff", marginBottom: "16px" }}>
-                Add Custom AutoMod Rule
-              </h3>
 
-              <form onSubmit={handleAddRule} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
-                  
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
-                      Rule Name
-                    </label>
-                    <input
-                      type="text"
-                      value={newRuleName}
-                      onChange={(e) => setNewRuleName(e.target.value)}
-                      placeholder="e.g., Anti-Invite Link"
-                      style={{
-                        padding: "10px 12px",
-                        backgroundColor: "#0b0c0e",
-                        border: "1px solid #2b2d31",
-                        borderRadius: "8px",
-                        color: "#ffffff",
-                        fontSize: "13px",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
+          {/* SECTION 2: ADD NEW RULE */}
+          <div
+            style={{
+              backgroundColor: "#141518",
+              border: "1px solid #232428",
+              borderRadius: "12px",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+            }}
+          >
+            <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#ffffff", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Add Rule
+            </h3>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
-                      Trigger Type
-                    </label>
-                    <select
-                      value={newRuleType}
-                      onChange={(e) => setNewRuleType(e.target.value as any)}
-                      style={{
-                        padding: "10px 12px",
-                        backgroundColor: "#0b0c0e",
-                        border: "1px solid #2b2d31",
-                        borderRadius: "8px",
-                        color: "#ffffff",
-                        fontSize: "13px",
-                        outline: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <option value="REGEX">Regular Expression (Regex)</option>
-                      <option value="KEYWORD">Keywords (comma-separated)</option>
-                    </select>
-                  </div>
+            <form onSubmit={handleAddRule} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
+                  Rule Name
+                </label>
+                <input
+                  type="text"
+                  value={newRuleName}
+                  onChange={(e) => setNewRuleName(e.target.value)}
+                  placeholder="e.g. Secret Filter"
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    backgroundColor: "#0b0c0e",
+                    border: "1px solid #2b2d31",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                    fontSize: "13px",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
-                      Primary Action
-                    </label>
-                    <select
-                      value={newRuleAction}
-                      onChange={(e) => setNewRuleAction(e.target.value as any)}
-                      style={{
-                        padding: "10px 12px",
-                        backgroundColor: "#0b0c0e",
-                        border: "1px solid #2b2d31",
-                        borderRadius: "8px",
-                        color: "#ffffff",
-                        fontSize: "13px",
-                        outline: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <option value="BLOCK">Block Message</option>
-                      <option value="TIMEOUT">Block + Timeout User</option>
-                    </select>
-                  </div>
-
-                </div>
-
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
-                    {newRuleType === "REGEX" ? "Regex Pattern" : "Keywords (comma separated)"}
+                    Trigger Type
                   </label>
-                  <input
-                    type="text"
-                    value={newRuleInput}
-                    onChange={(e) => setNewRuleInput(e.target.value)}
-                    placeholder={newRuleType === "REGEX" ? "(discord\\.gg\/[a-zA-Z0-9]+)" : "word1, word2, badphrase"}
+                  <select
+                    value={newRuleType}
+                    onChange={(e) => setNewRuleType(e.target.value as any)}
                     style={{
+                      width: "100%",
                       padding: "10px 12px",
                       backgroundColor: "#0b0c0e",
                       border: "1px solid #2b2d31",
@@ -506,78 +325,142 @@ export default function AutoModTester() {
                       color: "#ffffff",
                       fontSize: "13px",
                       outline: "none",
-                      fontFamily: "monospace",
+                      cursor: "pointer",
+                      boxSizing: "border-box",
                     }}
-                  />
+                  >
+                    <option value="REGEX">Regex Pattern</option>
+                    <option value="KEYWORD">Keyword List</option>
+                  </select>
                 </div>
 
-                <button
-                  type="submit"
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
+                    Action
+                  </label>
+                  <select
+                    value={newRuleAction}
+                    onChange={(e) => setNewRuleAction(e.target.value as any)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      backgroundColor: "#0b0c0e",
+                      border: "1px solid #2b2d31",
+                      borderRadius: "8px",
+                      color: "#ffffff",
+                      fontSize: "13px",
+                      outline: "none",
+                      cursor: "pointer",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <option value="BLOCK">Block Message</option>
+                    <option value="TIMEOUT">Block + Timeout</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "11px", color: "#949ba4", fontWeight: "600", textTransform: "uppercase" }}>
+                  {newRuleType === "REGEX" ? "Pattern" : "Keywords (comma separated)"}
+                </label>
+                <input
+                  type="text"
+                  value={newRuleInput}
+                  onChange={(e) => setNewRuleInput(e.target.value)}
+                  placeholder={newRuleType === "REGEX" ? "(password|secret|token)" : "token, password"}
                   style={{
-                    padding: "10px 20px",
-                    backgroundColor: "#acf6c8",
-                    border: "none",
+                    width: "100%",
+                    padding: "10px 12px",
+                    backgroundColor: "#0b0c0e",
+                    border: "1px solid #2b2d31",
                     borderRadius: "8px",
-                    color: "#000000",
+                    color: "#ffffff",
                     fontSize: "13px",
-                    fontWeight: "700",
-                    cursor: "pointer",
-                    alignSelf: "flex-start",
+                    outline: "none",
+                    fontFamily: "monospace",
+                    boxSizing: "border-box",
                   }}
-                >
-                  Create & Enable Rule
-                </button>
-              </form>
-            </div>
+                />
+              </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#ffffff" }}>
-                Configured Rules
-              </h3>
+              <button
+                type="submit"
+                style={{
+                  padding: "10px 16px",
+                  backgroundColor: "#acf6c8",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "#000000",
+                  fontSize: "13px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  alignSelf: "flex-start",
+                }}
+              >
+                Add Rule
+              </button>
+            </form>
+          </div>
 
+          {/* SECTION 3: CONFIGURED RULES LIST */}
+          <div
+            style={{
+              backgroundColor: "#141518",
+              border: "1px solid #232428",
+              borderRadius: "12px",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+            }}
+          >
+            <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#ffffff", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Rules ({rules.length})
+            </h3>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {rules.map((rule) => (
                 <div
                   key={rule.id}
                   style={{
-                    backgroundColor: "#141518",
-                    border: "1px solid #232428",
-                    borderRadius: "10px",
-                    padding: "18px",
+                    backgroundColor: "#0b0c0e",
+                    border: "1px solid #2b2d31",
+                    borderRadius: "8px",
+                    padding: "14px 16px",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    gap: "12px",
                   }}
                 >
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <span style={{ fontSize: "15px", fontWeight: "600", color: "#ffffff" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px", overflow: "hidden" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "13px", fontWeight: "600", color: "#ffffff" }}>
                         {rule.name}
                       </span>
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: "700",
-                          padding: "2px 8px",
-                          borderRadius: "4px",
-                          backgroundColor: rule.enabled ? "rgba(172, 246, 200, 0.1)" : "rgba(128, 132, 142, 0.1)",
-                          color: rule.enabled ? "#acf6c8" : "#80848e",
-                        }}
-                      >
-                        {rule.enabled ? "ACTIVE" : "DISABLED"}
-                      </span>
                     </div>
-                    <span style={{ fontSize: "12px", color: "#80848e", fontFamily: "monospace" }}>
-                      {rule.triggerType === "REGEX" ? `Patterns: ${rule.regexPatterns.join(", ")}` : `Keywords: ${rule.keywords.join(", ")}`}
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        color: "#80848e",
+                        fontFamily: "monospace",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {rule.triggerType}: {rule.patterns.join(", ")}
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                     <button
                       type="button"
                       onClick={() => toggleRuleEnabled(rule.id)}
                       style={{
                         padding: "6px 12px",
-                        backgroundColor: "#0b0c0e",
+                        backgroundColor: "#141518",
                         border: "1px solid #2b2d31",
                         borderRadius: "6px",
                         color: "#f2f3f5",
@@ -606,9 +489,9 @@ export default function AutoModTester() {
                 </div>
               ))}
             </div>
-
           </div>
-        )}
+
+        </div>
 
       </div>
     </div>

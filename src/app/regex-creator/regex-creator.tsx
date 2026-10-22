@@ -190,7 +190,7 @@ export default function AutomodRegexCreator() {
         
         <div style={{ marginBottom: "8px", textAlign: "left" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
-            AutoMod Regex Builder
+            AutoMod Regex Creator
           </h1>
           <p style={{ color: "#80848e", fontSize: "14px", lineHeight: "1.5" }}>
             Create regexes for your Discord automod rules.

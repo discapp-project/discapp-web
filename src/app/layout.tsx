@@ -37,6 +37,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           {children}
           <footer className="global-footer">
             <nav className="global-footer-links" aria-label="Footer">
+              <a>© {new Date().getFullYear()} Discapp. All rights reserved.</a>
               <a href="mailto:support@discapp.org">support@discapp.org</a>
               <Link href="/privacy">Privacy</Link>
               <Link href="/terms-of-use">Terms of Use</Link>
