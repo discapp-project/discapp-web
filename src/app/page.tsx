@@ -9,7 +9,7 @@ const officialPages = [
   {
     title: 'Discapp News',
     description: 'Latest updates, feature releases, and announcements.',
-    href: '/discapp-news',
+    href: '/news',
     icon: Newspaper,
     iconClass: 'news-icon'
   },

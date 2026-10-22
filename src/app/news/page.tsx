@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import DiscappNews from "./discapp-news";
+import News from "./news";
 
 export const metadata: Metadata = {
-  title: "Discapp News | Discapp",
+  title: "News | Discapp",
   description: "Latest announcements and updates from the Discapp platform.",
 };
 
-export default function DiscappNewsPage() {
-  return <DiscappNews />;
+export default function NewsPage() {
+  return <News />;
 }
