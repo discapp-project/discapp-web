@@ -15,6 +15,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Discapp | All In One Toolkit",
   description: "Get access to every tool on Discord as well as libraries to help make your life much easier!",
+  manifest: '/manifest.json',
   openGraph: {
     title: "Discapp | All In One Toolkit",
     description: "Get access to every tool on Discord as well as libraries to help make your life much easier!",
