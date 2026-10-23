@@ -158,7 +158,7 @@ export default function AssetStealer() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '32px 16px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '32px 16px', fontFamily: 'inherit' }}>
       <div style={{ maxWidth: '850px', margin: '0 auto' }}>
 
         <header style={{ marginBottom: '28px' }}>

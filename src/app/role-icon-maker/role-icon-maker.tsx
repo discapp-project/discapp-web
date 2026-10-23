@@ -1065,7 +1065,7 @@ export default function RoleIconBuilder() {
                 Preview (kinda broken, srry)
               </span>
 
-              <div style={{ backgroundColor: "#313338", borderRadius: "0.375rem", padding: "0.75rem", display: "flex", alignItems: "center", gap: "0.75rem", fontFamily: "sans-serif", fontSize: "0.875rem" }}>
+              <div style={{ backgroundColor: "#313338", borderRadius: "0.375rem", padding: "0.75rem", display: "flex", alignItems: "center", gap: "0.75rem", fontFamily: "inherit", fontSize: "0.875rem" }}>
                 <div style={{ width: "2rem", height: "2rem", borderRadius: "9999px", backgroundColor: "#5865f2", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontSize: "0.75rem", fontWeight: "bold", flexShrink: 0 }}>
                   S
                 </div>

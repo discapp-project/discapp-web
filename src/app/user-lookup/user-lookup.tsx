@@ -225,7 +225,7 @@ export default function DiscordUserLookup() {
   const flagsList = userData ? parseUserFlags(userData.flags || 0) : [];
 
   return (
-    <div style={{ backgroundColor: '#0e0f11', minHeight: '100vh', color: '#dcddde', padding: '24px 16px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
+    <div style={{ backgroundColor: '#0e0f11', minHeight: '100vh', color: '#dcddde', padding: '24px 16px', fontFamily: 'inherit' }}>
       <style>{`
         .custom-scroll::-webkit-scrollbar {
           width: 6px;

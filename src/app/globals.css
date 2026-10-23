@@ -21,7 +21,7 @@ body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: "Segoe UI Variable", "Aptos", "Segoe UI", sans-serif;
+  font-family: var(--font-plus-jakarta-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 button, input, textarea, select { font: inherit; }

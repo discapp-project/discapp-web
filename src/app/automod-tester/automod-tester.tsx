@@ -128,7 +128,7 @@ export default function AutoModTester() {
         minHeight: "100vh",
         backgroundColor: "#111214",
         color: "#f2f3f5",
-        fontFamily: "sans-serif",
+        fontFamily: "inherit",
         padding: "40px 20px",
       }}
     >
@@ -192,7 +192,7 @@ export default function AutoModTester() {
                   resize: "vertical",
                   boxSizing: "border-box",
                   lineHeight: "1.5",
-                  fontFamily: "sans-serif",
+                  fontFamily: "inherit",
                 }}
               />
             </div>

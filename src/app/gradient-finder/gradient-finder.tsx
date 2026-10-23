@@ -153,7 +153,7 @@ export default function GradientFinder() {
   const categories = ['All', 'Warm', 'Neon', 'Green', 'Blue', 'Purple', 'Pink', 'Cyan', 'Dark'];
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '16px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '16px', fontFamily: 'inherit' }}>
       <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
         
         <header style={{ marginBottom: '20px', textAlign: 'left' }}>

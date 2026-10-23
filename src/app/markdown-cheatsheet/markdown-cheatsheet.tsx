@@ -268,7 +268,7 @@ export default function DiscordMarkdownLibrary() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '24px 16px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '24px 16px', fontFamily: 'inherit' }}>
       <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
         
         <div style={{ marginBottom: '16px' }}>

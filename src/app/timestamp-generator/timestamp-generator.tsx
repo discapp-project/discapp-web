@@ -167,7 +167,7 @@ export default function DiscordTimestampGenerator() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "sans-serif", padding: "32px 20px" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "inherit", padding: "32px 20px" }}>
       <div style={{ maxWidth: "580px", margin: "0 auto" }}>
         
         <div style={{ marginBottom: "24px" }}>

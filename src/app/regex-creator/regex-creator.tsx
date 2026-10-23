@@ -182,7 +182,7 @@ export default function AutomodRegexCreator() {
         minHeight: "100vh",
         backgroundColor: "#111214",
         color: "#f2f3f5",
-        fontFamily: "sans-serif",
+        fontFamily: "inherit",
         padding: "40px 20px",
       }}
     >

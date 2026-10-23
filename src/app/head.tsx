@@ -47,10 +47,6 @@ export default function Head() {
 
   return (
     <>
-      <meta property="og:title" content="Discapp | All In One Toolkit" />
-      <meta property="og:description" content="Get access to every tool on Discord as well as libraries to help make your life much easier!" />
-      <meta property="og:url" content="https://discapp.org" />
-
       <script
         id="discord:component-embed"
         type="application/vnd.discord.component-embed+json"

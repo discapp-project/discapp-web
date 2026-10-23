@@ -1,8 +1,14 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import BugReportButton from "./components/BugReportButton";
 import "./globals.css";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+});
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -13,20 +19,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Discapp | All In One Toolkit",
-  description: "Get access to every tool on Discord as well as libraries to help make your life much easier!",
   manifest: '/manifest.json',
-  openGraph: {
-    title: "Discapp | All In One Toolkit",
-    description: "Get access to every tool on Discord as well as libraries to help make your life much easier!",
-    url: "https://discapp.org",
-  },
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body>
+      <body className={plusJakartaSans.variable}>
         <div className="app-shell">
           <nav className="topbar" aria-label="Main navigation">
             <Link className="brand" href="/">DISCAPP</Link>

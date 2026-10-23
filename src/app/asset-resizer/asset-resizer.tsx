@@ -191,7 +191,7 @@ export default function UniversalAssetResizer() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "sans-serif", padding: "40px 24px" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#f2f3f5", fontFamily: "inherit", padding: "40px 24px" }}>
       <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
         
         <div style={{ marginBottom: "28px" }}>

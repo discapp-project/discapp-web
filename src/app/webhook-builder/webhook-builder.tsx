@@ -1256,7 +1256,7 @@ export default function DiscordStudioWorkspace() {
   const previewAvatar = avatarUrl.trim() || activeWebhookProfile?.avatarUrl || "";
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#dbdee1", fontFamily: "'gg sans', 'Helvetica Neue', Helvetica, Arial, sans-serif", padding: "20px" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#111214", color: "#dbdee1", fontFamily: "inherit", padding: "20px" }}>
       <style>{`
         .block-container {
           position: relative;

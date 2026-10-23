@@ -48,7 +48,7 @@ export default function VanityChecker() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '24px 16px', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#111214', color: '#dbdee1', padding: '24px 16px', fontFamily: 'inherit' }}>
       <style>{`
         .input-row {
           display: flex;
