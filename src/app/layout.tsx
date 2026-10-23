@@ -19,7 +19,22 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://discapp.org"),
   manifest: '/manifest.json',
+  openGraph: {
+    images: [
+      {
+        url: '/discapp-mini-nobg.png',
+        width: 1200,
+        height: 630,
+        alt: 'Discapp Thumbnail',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary',
+    images: ['/discapp-mini-nobg.png'],
+  },
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {

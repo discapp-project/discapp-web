@@ -238,8 +238,8 @@ function importEmbedComponent(component: Record<string, unknown>): Embed {
           embed.authorIconUrl = item.accessory.media.url;
           addBlock("author");
         } else {
-          embed.imageUrl = item.accessory.media.url;
-          addBlock("image");
+          embed.thumbnailUrl = item.accessory.media.url;
+          addBlock("thumbnail");
           addText(text);
         }
         continue;
@@ -886,9 +886,36 @@ export default function DiscordStudioWorkspace() {
     embeds.slice(0, 10).forEach((embed) => {
       const children: DiscordComponent[] = [];
       const pendingText: string[] = [];
+      let pendingThumbnailUrl: string | undefined;
       const flushText = () => {
-        addContainerText(pendingText, children);
+        const text = pendingText.join("\n\n").trim();
+        if (!text) return;
+
         pendingText.length = 0;
+        const textComponents: Array<{ type: 10; content: string }> = [];
+        let remaining = text;
+        while (remaining.length > 4000) {
+          let splitAt = remaining.lastIndexOf("\n", 4000);
+          if (splitAt < 1) splitAt = 4000;
+          textComponents.push({ type: 10, content: remaining.slice(0, splitAt).trimEnd() });
+          remaining = remaining.slice(splitAt).trimStart();
+        }
+        if (remaining) textComponents.push({ type: 10, content: remaining });
+
+        if (pendingThumbnailUrl) {
+          const [sectionText, ...remainingText] = textComponents;
+          if (sectionText) {
+            children.push({
+              type: 9,
+              components: [sectionText],
+              accessory: { type: 11, media: { url: pendingThumbnailUrl } },
+            });
+            children.push(...remainingText);
+          }
+          pendingThumbnailUrl = undefined;
+        } else {
+          children.push(...textComponents);
+        }
       };
 
       for (const block of embed.blockOrder) {
@@ -950,12 +977,31 @@ export default function DiscordStudioWorkspace() {
               }
             }
             break;
-          case "thumbnail":
-          case "image": {
-            const url = block === "thumbnail" ? embed.thumbnailUrl : embed.imageUrl;
-            if (url?.trim().startsWith("http")) {
+          case "thumbnail": {
+            const url = embed.thumbnailUrl?.trim();
+            if (url?.startsWith("http")) {
+              pendingThumbnailUrl = url;
               flushText();
-              children.push({ type: 12, items: [{ media: { url: url.trim() } }] });
+              if (pendingThumbnailUrl) {
+                const previous = children[children.length - 1];
+                if (previous?.type === 10) {
+                  children.pop();
+                  children.push({
+                    type: 9,
+                    components: [previous],
+                    accessory: { type: 11, media: { url } },
+                  });
+                  pendingThumbnailUrl = undefined;
+                }
+              }
+            }
+            break;
+          }
+          case "image": {
+            const url = embed.imageUrl?.trim();
+            if (url?.startsWith("http")) {
+              flushText();
+              children.push({ type: 12, items: [{ media: { url } }] });
             }
             break;
           }
@@ -1151,6 +1197,21 @@ export default function DiscordStudioWorkspace() {
 
   const validatePayload = (): string | null => {
     if (payload.components.length === 0) return "Add at least one component before sending.";
+
+    const thumbnailWithoutText = embeds.some((embed) => {
+      if (!embed.thumbnailUrl?.trim().startsWith("http")) return false;
+      const hasText =
+        embed.title?.trim() ||
+        embed.description?.trim() ||
+        embed.fields.some((field) => field.name.trim() && field.value.trim()) ||
+        (embed.authorName?.trim() && !embed.authorIconUrl?.trim().startsWith("http")) ||
+        embed.footerText?.trim() ||
+        (embed.timestamp && Number.isFinite(Date.parse(embed.timestamp))) ||
+        (embed.sectionText?.trim() &&
+          !(embed.sectionButtonLabel?.trim() && embed.sectionButtonUrl?.trim().startsWith("http")));
+      return !hasText;
+    });
+    if (thumbnailWithoutText) return "A thumbnail needs text in its section. Add a title or description to the container.";
 
     const countComponents = (components: DiscordComponent[]): number =>
       components.reduce((total, component) => {
